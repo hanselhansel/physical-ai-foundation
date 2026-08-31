@@ -4,10 +4,10 @@ Hansel's learning and evidence portfolio for Physical AI product, deployment, in
 
 ## Start here
 
-- **Active project:** [Portfolio reorganization](docs/decisions/2026-08-31-portfolio-reorganization.md).
-- **Current checkpoint:** The Portfolio repository is renamed, moved, and `VERIFIED`. Contributions, Outreach, and Warehouse remain at `BASELINE`.
+- **Completed project:** [Portfolio reorganization](docs/decisions/2026-08-31-portfolio-reorganization.md).
+- **Current checkpoint:** All four repository migration lanes are `VERIFIED`. Canonical leaf links and paths passed final reconciliation.
 - **Evidence state:** [Status](STATUS.md) distinguishes written, reviewed, runtime, and external evidence.
-- **Next decision:** Land the scoped runner-variable fix, then migrate Contributions, Outreach, and Warehouse in dependency order.
+- **Next decision:** Select and write the flagship experiment charter.
 - **Candidate experiment:** Open Robotics Middleware Framework (Open-RMF) office demo. Runtime unvalidated. A flagship experiment charter must select it before execution.
 
 See [ROADMAP.md](ROADMAP.md) for ordering and gates.
@@ -33,7 +33,7 @@ Detailed project status and evidence stay in the project repository.
 
 Contributions are work proposed to projects owned by others.
 
-Current GitHub repository: [hanselhansel/pai-lerobot-contrib](https://github.com/hanselhansel/pai-lerobot-contrib). The approved destination is `pai-contributions`.
+Current GitHub repository: [hanselhansel/pai-contributions](https://github.com/hanselhansel/pai-contributions). The previous `pai-lerobot-contrib` URL redirects here and must not be reused.
 
 The current contribution is [warehouse-amr-ros2 pull request #1](https://github.com/Pouya-Mansournia/warehouse-amr-ros2/pull/1). Submission is complete. The upstream outcome is waiting for maintainer review.
 
@@ -41,7 +41,7 @@ The current contribution is [warehouse-amr-ros2 pull request #1](https://github.
 
 Outreach contains public communication: publishable posts, generic target categories, talks, reusable messages, and public feedback.
 
-Current GitHub repository: [hanselhansel/pai-community](https://github.com/hanselhansel/pai-community). The approved destination is `pai-outreach`.
+Current GitHub repository: [hanselhansel/pai-outreach](https://github.com/hanselhansel/pai-outreach). The previous `pai-community` URL redirects here and must not be reused.
 
 Private names, contact history, direct messages, meeting notes, contact exports, and non-public feedback do not belong in the public Outreach repository. Outreach remains Parked until a validated case is approved for external communication.
 

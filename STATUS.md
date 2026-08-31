@@ -9,19 +9,19 @@ The execution repository owns detailed evidence. This file holds concise cross-p
 - **Title:** Physical AI portfolio reorganization
 - **Category:** Portfolio
 - **Objective:** Establish the approved repository-purpose structure without losing history or breaking links.
-- **Workflow status:** Active
+- **Workflow status:** Complete
 - **Success criteria:** Approved names, paths, repository contracts, links, and verification gates are live and reconciled.
 - **Required validation:** Review-validated, runtime-validated migration checks, and decision-validated completion.
 - **Evidence links:** [Design](docs/superpowers/specs/2026-08-31-physical-ai-portfolio-operating-model-design.md), [plan](docs/superpowers/plans/2026-08-31-physical-ai-portfolio-reorganization.md), [baseline](docs/decisions/2026-08-31-portfolio-reorganization.md).
-- **Result:** The Portfolio repository is renamed, moved, and `VERIFIED`. Contributions, Outreach, and Warehouse remain at `BASELINE`.
-- **Limitations:** Final state still depends on the three remaining sequential migration lanes and final reconciliation.
-- **Next decision:** Land the scoped runner-variable fix, then migrate Contributions.
+- **Result:** Portfolio, Contributions, Outreach, and Warehouse are renamed or moved as approved. All four migration journals report `VERIFIED`. Canonical leaf links and local paths passed final reconciliation.
+- **Limitations:** Previous GitHub names remain redirects and must not be reused. Private migration journals remain local operator evidence.
+- **Next decision:** Select and write the flagship experiment charter.
 - **Authority:** Portfolio repository and live GitHub refs.
 - **Observed at:** 2026-08-31
-- **Source commit:** `98d10b3f5050f6edeb7df73274b576b391801853` on live `physical-ai-portfolio/main`; the scoped runner-variable fix is on the current branch.
+- **Source commit:** Portfolio `af03bcdd77d8ba0c2216f786ec6b2703f792d5e4` before this release; Contributions `dad13f2b72b955ee8b9c0ed770b5ce50d902cbc1`; Outreach `18bd1490d7d6af5dd77a277316cc2d013c2f81cd`; Warehouse `c55eb5611f3d65782cf6fe735ef967ea7686486a`.
 - **Fresh until:** 2026-09-01
-- **Recheck command:** `bash scripts/portfolio-migration.sh status portfolio`
-- **Active project:** Yes
+- **Recheck command:** `for key in portfolio contributions outreach warehouse; do bash scripts/portfolio-migration.sh status "$key"; done; ! rg -n 'physical-ai-foundation|pai-lerobot-contrib|pai-community' ../contributions/README.md ../outreach/README.md ../projects/warehouse-deployment/README.md`
+- **Active project:** No
 - **Candidate experiment:** None
 
 ## Warehouse evidence audit
@@ -38,9 +38,9 @@ The execution repository owns detailed evidence. This file holds concise cross-p
 - **Next decision:** Begin after the portfolio migration and flagship experiment charter.
 - **Authority:** Warehouse project repository.
 - **Observed at:** 2026-08-31
-- **Source commit:** `aa11e3a70cd085073550509665276f095bf92643`
+- **Source commit:** `c55eb5611f3d65782cf6fe735ef967ea7686486a`
 - **Fresh until:** 2026-09-30
-- **Recheck command:** `git -C ../warehouse-deployment log -1 --format=%H` until migration, then canonicalize to `../projects/warehouse-deployment`.
+- **Recheck command:** `git -C ../projects/warehouse-deployment log -1 --format=%H`
 - **Active project:** No
 - **Candidate experiment:** Open-RMF office demo, runtime unvalidated
 
@@ -88,15 +88,15 @@ The execution repository owns detailed evidence. This file holds concise cross-p
 - **Workflow status:** Parked
 - **Success criteria:** Public materials remain free of private relationship records.
 - **Required validation:** Review-validated and privacy-reviewed.
-- **Evidence links:** [Current Outreach repository](https://github.com/hanselhansel/pai-community).
+- **Evidence links:** [Current Outreach repository](https://github.com/hanselhansel/pai-outreach).
 - **Result:** Generic target categories and message templates exist.
 - **Limitations:** Outreach is not active in this project.
 - **Next decision:** Restart after a validated case is approved for external communication.
 - **Authority:** Outreach repository.
 - **Observed at:** 2026-08-31
-- **Source commit:** `b91b56b2455c531a6bcec596f6b41dcb173feafe`
+- **Source commit:** `18bd1490d7d6af5dd77a277316cc2d013c2f81cd`
 - **Fresh until:** 2026-09-30
-- **Recheck command:** `git -C ../community status --short --branch` until migration, then canonicalize to `../outreach`.
+- **Recheck command:** `git -C ../outreach status --short --branch`
 
 ## Compute decision
 

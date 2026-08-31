@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.0.3] - 2026-08-31
+
+### Changed
+
+- You can now confirm all four `VERIFIED` migration lanes and canonical leaf links from the [portfolio landing page](README.md), [status](STATUS.md), and [migration decision](docs/decisions/2026-08-31-portfolio-reorganization.md).
+- You can now move to the [flagship experiment charter](ROADMAP.md#2-flagship-experiment-charter) as the next portfolio action.
+
+### For contributors
+
+- Expected app-gate stops now remove the active migration lock without emitting a Bash `unbound variable` cleanup error.
+- A regression assertion now requires clean app-gate termination.
+
 ## [0.1.0.2] - 2026-08-31
 
 ### For contributors

@@ -1,7 +1,7 @@
 # Physical AI portfolio reorganization
 
 Date: 2026-08-31
-Status: Approved, implementation active
+Status: Complete
 
 ## Decision
 
@@ -98,4 +98,17 @@ Migration inventory output records counts and boolean results. It does not recor
 
 ## Next action
 
-The Portfolio lane is `VERIFIED`. Land the scoped runner-variable fix, then migrate Contributions, Outreach, and Warehouse in dependency order.
+The repository reorganization is complete. Select and write the flagship experiment charter next.
+
+## Final verified lane state
+
+| Purpose | Canonical GitHub repository | Canonical local path | Verified main before final Portfolio release |
+|---|---|---|---|
+| Portfolio | `hanselhansel/physical-ai-portfolio` | `portfolio/` | `af03bcdd77d8ba0c2216f786ec6b2703f792d5e4` |
+| Contributions | `hanselhansel/pai-contributions` | `contributions/` | `dad13f2b72b955ee8b9c0ed770b5ce50d902cbc1` |
+| Outreach | `hanselhansel/pai-outreach` | `outreach/` | `18bd1490d7d6af5dd77a277316cc2d013c2f81cd` |
+| Warehouse project | `hanselhansel/pai-warehouse-deployment` | `projects/warehouse-deployment/` | `c55eb5611f3d65782cf6fe735ef967ea7686486a` |
+
+All four private migration journals reached `VERIFIED`. GitHub readback retained the same immutable repository IDs through the renames. The old names remain redirects and must not be reused. The Codex saved-project readback found no project rooted directly at a moved path. The external warehouse AMR pull request remained accessible and open. The local workspace index was reconciled to the new structure with SHA-256 `80a19a6d96d13d6ff0538f3903717c33e54ff9c38c0f0968682bdc1bdbd122c2`.
+
+The canonical leaf README reconciliation landed in Contributions PR #4, Outreach PR #3, and Warehouse PR #11. The final status gate revalidated all four journals and found no stale current link in those leaf READMEs.
