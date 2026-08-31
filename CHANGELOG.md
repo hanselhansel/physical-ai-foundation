@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0.2] - 2026-08-31
+
+### Fixed
+
+- Scopes repository keys and transient state inside migration functions so nested predecessor verification cannot change the active lane.
+- Adds a regression test that preserves the caller's repository key across nested verification.
+
 ## [0.1.0.1] - 2026-08-31
 
 ### Fixed
