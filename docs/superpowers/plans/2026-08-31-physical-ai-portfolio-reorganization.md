@@ -132,7 +132,7 @@ Delete `docs/progress.md` only after every still-current fact has a destination 
 
 - [ ] **Step 7: Run focused control-plane checks**
 
-Run `bash scripts/tests/test-portfolio-migration.sh` and `bash scripts/portfolio-migration.sh verify`. Expected: all fixtures pass, required files and every required heading are checked individually, no aggregate `wc` row is evaluated, no whitespace error exists, and every Markdown or script file remains below 400 lines.
+Run `bash scripts/tests/test-portfolio-migration.sh`, `bash scripts/tests/test-portfolio-safety.sh`, and `bash scripts/portfolio-migration.sh verify`. Expected: all fixtures pass, required files and every required heading are checked individually, no aggregate `wc` row is evaluated, no whitespace error exists, and every Markdown or script file remains below 400 lines.
 
 - [ ] **Step 8: Commit the control plane**
 

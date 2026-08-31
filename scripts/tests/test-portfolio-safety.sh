@@ -74,10 +74,32 @@ test_verify_rejects_broken_relative_link() {
   rm -rf "$root"
 }
 
+test_corrupt_lock_stops() {
+  root=$(mktemp -d)
+  setup_portfolio_fixture "$root"
+  mkdir -p "$root/state/portfolio.lock"
+  printf 'not-a-pid\n' > "$root/state/portfolio.lock/pid"
+  output=$(PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" PORTFOLIO_APP_GATE=passed PORTFOLIO_TEST_MODE=1 "$RUNNER" migrate-one portfolio --workspace-root "$root" --apply 2>&1 || true)
+  if printf '%s' "$output" | grep -q 'LOCK_CORRUPT'; then pass 'corrupt lock stops migration'; else fail 'corrupt lock was accepted'; fi
+  rm -rf "$root"
+}
+
+test_live_lock_owner_stops() {
+  root=$(mktemp -d)
+  setup_portfolio_fixture "$root"
+  mkdir -p "$root/state/portfolio.lock"
+  printf '%s\n' "$$" > "$root/state/portfolio.lock/pid"
+  output=$(PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" PORTFOLIO_APP_GATE=passed PORTFOLIO_TEST_MODE=1 "$RUNNER" migrate-one portfolio --workspace-root "$root" --apply 2>&1 || true)
+  if printf '%s' "$output" | grep -q 'LOCK_EXISTS.*live_pid'; then pass 'live lock owner stops migration'; else fail 'live lock owner was ignored'; fi
+  rm -rf "$root"
+}
+
 test_app_gate_blocks_verified
 test_ssh_remote_is_preserved
 test_test_mode_rejected_for_canonical_workspace
 test_status_revalidates_healthy_verified_state
 test_verify_rejects_broken_relative_link
+test_corrupt_lock_stops
+test_live_lock_owner_stops
 printf 'tests=%s failures=%s\n' "$((passed + failed))" "$failed"
 test "$failed" -eq 0
