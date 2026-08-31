@@ -98,4 +98,15 @@ Migration inventory output records counts and boolean results. It does not recor
 
 ## Next action
 
-The Portfolio lane is `VERIFIED`. Land the scoped runner-variable fix, then migrate Contributions, Outreach, and Warehouse in dependency order.
+The repository reorganization is complete. Select and write the flagship experiment charter next.
+
+## Final verified state
+
+| Purpose | Canonical GitHub repository | Canonical local path | Baseline main before reconciliation |
+|---|---|---|---|
+| Portfolio | `hanselhansel/physical-ai-portfolio` | `portfolio/` | `af03bcdd77d8ba0c2216f786ec6b2703f792d5e4` |
+| Contributions | `hanselhansel/pai-contributions` | `contributions/` | `a58203be4dfbd3c651e28d607264dba272e44597` |
+| Outreach | `hanselhansel/pai-outreach` | `outreach/` | `d2fdb09034d8ffda8f1aafeba740ab5ee8bdab37` |
+| Warehouse project | `hanselhansel/pai-warehouse-deployment` | `projects/warehouse-deployment/` | `856a63e424f4bca2156d2cbe507e0595fe4647b2` |
+
+All four private migration journals reached `VERIFIED`. GitHub readback retained the same immutable repository IDs through the renames. The old names remain redirects and must not be reused. The Codex saved-project readback found no project rooted directly at a moved path. The external warehouse AMR pull request remained accessible and open. The local workspace index was reconciled to the new structure with SHA-256 `80a19a6d96d13d6ff0538f3903717c33e54ff9c38c0f0968682bdc1bdbd122c2`.
