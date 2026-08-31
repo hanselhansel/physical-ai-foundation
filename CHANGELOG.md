@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0.1] - 2026-08-31
+
+### Fixed
+
+- Persists app-level readback per repository so verified predecessor lanes do not require an unrelated current-shell flag.
+- Revalidates healthy VERIFIED status using the journaled app gate.
+
 ## [0.1.0.0] - 2026-08-31
 
 ### Added
