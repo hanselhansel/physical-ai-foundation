@@ -20,23 +20,27 @@ Updated: 2026-08-31
 - [x] Sub-domain analysis: AMR fleet orchestration.
 
 ### Open-source contribution
-- [x] Opened PR to `Pouya-Mansournia/warehouse-amr-ros2` adding `docs/DEPLOYMENT_CONSIDERATIONS.md`.
+- [x] Submitted PR to `Pouya-Mansournia/warehouse-amr-ros2` adding `docs/DEPLOYMENT_CONSIDERATIONS.md`.
 - [x] PR URL: https://github.com/Pouya-Mansournia/warehouse-amr-ros2/pull/1
+- [x] Status: Awaiting maintainer review. Follow-up in 7-10 days.
 - [x] Logged in `pai-lerobot-contrib/docs/contributions.md`.
 
-### Public posts
+### Public posts and community
 - [x] 12-post X series drafted and ready to publish.
-- [ ] Posts published: 0 of 12.
+- [x] Networking target list and outreach templates in `pai-community/networking/`.
+- [ ] Posts published on X: 0 of 12.
+- [ ] Outreach messages sent: 0 of 30.
+- [ ] Conversations held: 0 of 5.
 
 ## In progress / next
 
-- [ ] Technical setup: run the ROS 2 Humble Docker container and complete a basic tutorial.
-- [ ] Network list: 0 of 30 outreach.
-- [ ] Public posts: publish 12 drafted posts on X.
+- [ ] Publish X post series.
+- [ ] Start outreach using target list and message templates.
+- [ ] Run the ROS 2 Humble Docker tutorial (optional, for technical fluency).
 - [ ] Written retrospective: not yet reached.
 
 ## Open decisions
 
-1. When should you start publishing the X posts? (Recommended: 3 per week for 4 weeks.)
-2. Should we prioritize networking or technical setup next? Networking is higher-leverage for your goals; technical setup is useful for fluency but not critical for PM/deployment roles.
-3. Should we add another sub-domain analysis (robotic piece-picking, warehouse digital twins, AI vision inspection) or move to a retrospective and next-sprint plan?
+1. When do you want to start publishing the X posts? (Recommended: 3 per week for 4 weeks.)
+2. Do you want to track outreach in a shared file (e.g., `community/networking/outreach-log.md`)?
+3. Should we add a second sub-domain analysis (warehouse digital twins, AI vision inspection, or robotic piece-picking) or move to a retrospective and next-sprint plan?
