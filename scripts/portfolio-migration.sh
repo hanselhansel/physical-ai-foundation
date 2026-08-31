@@ -12,6 +12,8 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 . "$SCRIPT_DIR/lib/portfolio-lock.sh"
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/lib/portfolio-preflight.sh"
+# shellcheck disable=SC1091
+. "$SCRIPT_DIR/lib/portfolio-links.sh"
 
 usage() {
   printf 'usage: %s {preflight|status|migrate-one|verify} [options]\n' "$0" >&2

@@ -113,6 +113,7 @@ verify_portfolio() {
     check_status_schema "$root/STATUS.md" || failed=1
   fi
   check_line_limits "$root" || failed=1
+  check_relative_links "$root" || failed=1
   test "$failed" -eq 0
 }
 
