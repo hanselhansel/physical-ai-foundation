@@ -4,10 +4,10 @@ Hansel's learning and evidence portfolio for Physical AI product, deployment, in
 
 ## Start here
 
-- **Active project:** [Portfolio reorganization](docs/decisions/2026-08-31-portfolio-reorganization.md).
-- **Current checkpoint:** All four repository migration lanes are `VERIFIED`. Canonical leaf README reconciliation remains pending in Contributions, Outreach, and Warehouse.
+- **Completed project:** [Portfolio reorganization](docs/decisions/2026-08-31-portfolio-reorganization.md).
+- **Current checkpoint:** All four repository migration lanes are `VERIFIED`, including canonical leaf links and paths.
 - **Evidence state:** [Status](STATUS.md) distinguishes written, reviewed, runtime, and external evidence.
-- **Next decision:** Update the remaining leaf READMEs to canonical links, then rerun final reconciliation.
+- **Next decision:** Select and write the flagship experiment charter.
 - **Candidate experiment:** Open Robotics Middleware Framework (Open-RMF) office demo. Runtime unvalidated. A flagship experiment charter must select it before execution.
 
 See [ROADMAP.md](ROADMAP.md) for ordering and gates.

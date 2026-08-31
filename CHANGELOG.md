@@ -4,8 +4,8 @@
 
 ### Changed
 
-- The [portfolio landing page](README.md), [status](STATUS.md), and [migration decision](docs/decisions/2026-08-31-portfolio-reorganization.md) now record all four repository lanes as `VERIFIED` while keeping the remaining leaf-link reconciliation explicit.
-- The next portfolio action is now to canonicalize the remaining leaf README links and rerun final reconciliation.
+- The [portfolio landing page](README.md), [status](STATUS.md), and [migration decision](docs/decisions/2026-08-31-portfolio-reorganization.md) now record all four repository lanes and canonical leaf links as `VERIFIED`.
+- The next portfolio action is now the flagship experiment charter.
 
 ### For contributors
 

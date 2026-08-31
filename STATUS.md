@@ -9,19 +9,19 @@ The execution repository owns detailed evidence. This file holds concise cross-p
 - **Title:** Physical AI portfolio reorganization
 - **Category:** Portfolio
 - **Objective:** Establish the approved repository-purpose structure without losing history or breaking links.
-- **Workflow status:** Active
+- **Workflow status:** Complete
 - **Success criteria:** Approved names, paths, repository contracts, links, and verification gates are live and reconciled.
 - **Required validation:** Review-validated, runtime-validated migration checks, and decision-validated completion.
 - **Evidence links:** [Design](docs/superpowers/specs/2026-08-31-physical-ai-portfolio-operating-model-design.md), [plan](docs/superpowers/plans/2026-08-31-physical-ai-portfolio-reorganization.md), [baseline](docs/decisions/2026-08-31-portfolio-reorganization.md).
-- **Result:** Portfolio, Contributions, Outreach, and Warehouse are renamed or moved as approved, and all four migration journals report `VERIFIED`. Canonical leaf README reconciliation is still pending.
-- **Limitations:** The Contributions and Warehouse READMEs still link to `physical-ai-foundation`. The Outreach README also retains its pre-migration `pai-community` wording. Previous GitHub names remain redirects and must not be reused. Private migration journals remain local operator evidence.
-- **Next decision:** Update the three leaf READMEs to canonical links, then rerun final reconciliation.
+- **Result:** Portfolio, Contributions, Outreach, and Warehouse are renamed or moved as approved. All four migration journals report `VERIFIED`, and canonical leaf links and local paths are live.
+- **Limitations:** Previous GitHub names remain redirects and must not be reused. Private migration journals remain local operator evidence.
+- **Next decision:** Select and write the flagship experiment charter.
 - **Authority:** Portfolio repository and live GitHub refs.
 - **Observed at:** 2026-08-31
-- **Source commit:** `af03bcdd77d8ba0c2216f786ec6b2703f792d5e4` on live `physical-ai-portfolio/main` before this reconciliation.
+- **Source commit:** Portfolio `af03bcdd77d8ba0c2216f786ec6b2703f792d5e4` before this release; Contributions `dad13f2b72b955ee8b9c0ed770b5ce50d902cbc1`; Outreach `18bd1490d7d6af5dd77a277316cc2d013c2f81cd`; Warehouse `c55eb5611f3d65782cf6fe735ef967ea7686486a`.
 - **Fresh until:** 2026-09-01
 - **Recheck command:** `for key in portfolio contributions outreach warehouse; do bash scripts/portfolio-migration.sh status "$key"; done; ! rg -n 'physical-ai-foundation|pai-lerobot-contrib|pai-community' ../contributions/README.md ../outreach/README.md ../projects/warehouse-deployment/README.md`
-- **Active project:** Yes
+- **Active project:** No
 - **Candidate experiment:** None
 
 ## Warehouse evidence audit
