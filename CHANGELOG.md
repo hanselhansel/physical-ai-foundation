@@ -4,21 +4,21 @@
 
 ### Added
 
-- A public Physical AI Portfolio landing page, cross-project status, roadmap, and reusable evidence templates.
-- An approved operating-model design and implementation plan for the Portfolio, Projects, Contributions, Outreach, and Forks structure.
-- A fail-closed repository migration CLI with immutable GitHub identity checks, private journals, atomic locks, dependency ordering, app-level gates, and resumable state transitions.
-- Twenty-seven regression assertions covering migration, verification, schema, identity, remotes, locks, app gates, and relative links.
-- A dated migration baseline preserving repository IDs, commits, external contribution continuity, and current-practice sources.
+- You can now navigate a public Physical AI Portfolio landing page with cross-project [status](STATUS.md), a [roadmap](ROADMAP.md), and reusable evidence templates.
+- You can now trace the approved Portfolio, Projects, Contributions, Outreach, and Forks structure through the [operating-model design](docs/superpowers/specs/2026-08-31-physical-ai-portfolio-operating-model-design.md) and [implementation plan](docs/superpowers/plans/2026-08-31-physical-ai-portfolio-reorganization.md).
+- You can now use a fail-closed repository migration CLI with immutable GitHub identity checks, private journals, atomic locks, dependency ordering, app-level gates, and resumable state transitions. See the [operator commands](README.md#migration-operator-commands).
+- You can now verify migration, schema, identity, remotes, locks, app gates, and relative links with twenty-seven regression assertions.
+- You can now inspect a dated [migration baseline](docs/decisions/2026-08-31-portfolio-reorganization.md) preserving repository IDs, commits, external contribution continuity, and current-practice sources.
 
 ### Changed
 
-- Replaced the old Foundation sprint framing with an evidence-first Portfolio control plane.
-- Reclassified Open-RMF as an unvalidated candidate behind a flagship experiment charter.
-- Marked the warehouse AMR post series Parked and not publication-ready.
-- Corrected the local compute decision to distinguish container availability from observed runtime performance.
+- The [landing page](README.md) now replaces the old Foundation sprint framing with an evidence-first Portfolio control plane.
+- Open-RMF is now classified as an unvalidated candidate behind a flagship experiment charter in the [roadmap](ROADMAP.md).
+- The [warehouse AMR post series](docs/x-posts/warehouse-amr-deployment-series.md) is now Parked and not publication-ready.
+- The [local compute decision](docs/decisions/compute-setup.md) now distinguishes container availability from observed runtime performance.
 
 ### Fixed
 
-- Prevented aggregate line counts and duplicate status fields from masking validation failures.
-- Rejected wrong repository IDs, disallowed origins, occupied destinations, stale or live locks, unsafe test-mode use, broken links, and stale VERIFIED journals.
-- Preserved SSH or HTTPS remote protocols and enforced sequential repository migration dependencies.
+- Verification now prevents aggregate line counts and duplicate status fields from masking validation failures.
+- Migration now stops on wrong repository IDs, disallowed origins, occupied destinations, stale or live locks, unsafe test-mode use, broken links, and stale `VERIFIED` journals.
+- Migration now preserves SSH or HTTPS remote protocols and enforces sequential repository dependencies.

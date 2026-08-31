@@ -11,6 +11,7 @@ Hansel's learning and evidence portfolio for Physical AI product, deployment, in
 - **Candidate experiment:** Open Robotics Middleware Framework (Open-RMF) office demo. Runtime unvalidated. A flagship experiment charter must select it before execution.
 
 See [ROADMAP.md](ROADMAP.md) for ordering and gates.
+See the [changelog](CHANGELOG.md) for release history.
 
 ## Portfolio
 
@@ -58,10 +59,38 @@ The current fork is [hanselhansel/warehouse-amr-ros2](https://github.com/hanselh
 - Status claims include an authority, observation time, source commit, freshness limit, and recheck command.
 - Local, cached, and live Git state are compared before and after cross-repository changes.
 
+## Migration operator commands
+
+The migration CLI is fail-closed. `migrate-one` reports a dry run unless `--apply` is present.
+
+Validate this isolated checkout without changing GitHub or the filesystem:
+
+```bash
+bash scripts/portfolio-migration.sh verify --workspace-root "$PWD"
+```
+
+Run the read-only preflight against the canonical workspace, inspect a lane, or preview one migration:
+
+```bash
+bash scripts/portfolio-migration.sh preflight
+bash scripts/portfolio-migration.sh status portfolio
+bash scripts/portfolio-migration.sh migrate-one portfolio
+```
+
+After aligned content lands and preflight passes, apply one dependency-ordered lane at a time:
+
+```bash
+bash scripts/portfolio-migration.sh migrate-one portfolio --apply
+```
+
+The apply command can rename a GitHub repository and move its local checkout. Follow the [migration plan](docs/superpowers/plans/2026-08-31-physical-ai-portfolio-reorganization.md) and verify each lane before starting the next.
+
 ## Decisions and working documents
 
 - [Compute setup](docs/decisions/compute-setup.md)
 - [Portfolio operating-model design](docs/superpowers/specs/2026-08-31-physical-ai-portfolio-operating-model-design.md)
 - [Portfolio reorganization plan](docs/superpowers/plans/2026-08-31-physical-ai-portfolio-reorganization.md)
 - [Migration baseline](docs/decisions/2026-08-31-portfolio-reorganization.md)
+- [Portfolio item template](docs/templates/portfolio-item.md)
+- [Runtime experiment template](docs/templates/runtime-experiment.md)
 - [Parked warehouse AMR X series](docs/x-posts/warehouse-amr-deployment-series.md)
