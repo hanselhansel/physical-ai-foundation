@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0.1] - 2026-08-31
+
+### Fixed
+
+- You can now persist each repository's app-level readback in its private migration journal, so a verified predecessor lane does not require an unrelated current-shell flag.
+- You can now revalidate healthy `VERIFIED` status using the journaled app gate. See the [operator commands](README.md#migration-operator-commands).
+
 ## [0.1.0.0] - 2026-08-31
 
 ### Added

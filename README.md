@@ -5,9 +5,9 @@ Hansel's learning and evidence portfolio for Physical AI product, deployment, in
 ## Start here
 
 - **Active project:** [Portfolio reorganization](docs/decisions/2026-08-31-portfolio-reorganization.md).
-- **Current checkpoint:** Design and migration baseline approved. Repository content is being aligned. No GitHub repository has been renamed or moved yet.
+- **Current checkpoint:** The Portfolio repository is renamed, moved, and `VERIFIED`. Contributions, Outreach, and Warehouse remain at `BASELINE`.
 - **Evidence state:** [Status](STATUS.md) distinguishes written, reviewed, runtime, and external evidence.
-- **Next decision:** Ship and land the aligned repository content, then execute the verified migration lanes.
+- **Next decision:** Land the per-repository app-gate fix, then migrate Contributions, Outreach, and Warehouse in dependency order.
 - **Candidate experiment:** Open Robotics Middleware Framework (Open-RMF) office demo. Runtime unvalidated. A flagship experiment charter must select it before execution.
 
 See [ROADMAP.md](ROADMAP.md) for ordering and gates.
@@ -17,7 +17,7 @@ See the [changelog](CHANGELOG.md) for release history.
 
 The Portfolio repository is the public entry point and cross-repository control plane. It owns the repository map, roadmap, cross-project status, decisions, and retrospectives. It links to evidence but does not copy project logs or results.
 
-Current GitHub repository: [hanselhansel/physical-ai-foundation](https://github.com/hanselhansel/physical-ai-foundation). The approved destination is `physical-ai-portfolio`; the current URL remains authoritative until the migration is verified.
+Current GitHub repository: [hanselhansel/physical-ai-portfolio](https://github.com/hanselhansel/physical-ai-portfolio). The previous `physical-ai-foundation` URL redirects here and must not be reused.
 
 ## Projects
 
@@ -84,6 +84,14 @@ bash scripts/portfolio-migration.sh migrate-one portfolio --apply
 ```
 
 The apply command can rename a GitHub repository and move its local checkout. Follow the [migration plan](docs/superpowers/plans/2026-08-31-physical-ai-portfolio-reorganization.md) and verify each lane before starting the next.
+
+The first apply run may stop at `APP_GATE_PENDING` after the GitHub rename and local move. Complete the Codex app saved-project readback, then rerun the same lane with the gate result:
+
+```bash
+PORTFOLIO_APP_GATE=passed bash scripts/portfolio-migration.sh migrate-one portfolio --apply
+```
+
+When the lane reaches `VERIFIED`, the runner records `app_gate=passed` in that repository's private journal. Later status checks and dependent lanes reuse the journaled result. They do not require an unrelated current shell to set the flag again.
 
 ## Decisions and working documents
 
