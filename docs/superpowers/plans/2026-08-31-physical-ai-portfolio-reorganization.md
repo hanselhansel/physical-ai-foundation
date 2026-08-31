@@ -31,6 +31,7 @@ Run the gstack autoplan workflow against this plan and the approved design befor
 - Create: `scripts/lib/portfolio-manifest.sh`, explicit repositories, paths, IDs, URLs, descriptions, and dependencies.
 - Create: `scripts/lib/portfolio-state.sh`, state detection, lock, journal, redaction, and filesystem safety.
 - Create: `scripts/lib/github-adapter.sh`, scoped GitHub queries, rename, identity, permission, and redirect checks.
+- Create: `scripts/lib/portfolio-preflight.sh` and `scripts/lib/portfolio-lock.sh`, mutation gates and lock handling.
 - Create: `scripts/tests/test-portfolio-migration.sh`, temporary-fixture regression tests.
 - Delete: `docs/progress.md`, after its useful content moves to `STATUS.md` and `ROADMAP.md`.
 - Modify: `docs/decisions/compute-setup.md`, correct paths and unverified runtime wording.

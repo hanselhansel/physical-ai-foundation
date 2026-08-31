@@ -116,51 +116,6 @@ verify_portfolio() {
   test "$failed" -eq 0
 }
 
-preflight_repository() {
-  workspace_root=$1
-  repo_key=$2
-  load_repository_manifest "$repo_key" || return 1
-  path="$workspace_root/$OLD_PATH_REL"
-  test -d "$path/.git" || { emit_failure SOURCE_MISSING "$path" absent restore_checkout; return 1; }
-  branch=$(git -C "$path" symbolic-ref --quiet --short HEAD 2>/dev/null || true)
-  test "$branch" = main || { printf '[FAIL] code=BRANCH_NOT_MAIN repo=%s observed=%s recovery=switch_main\n' "$repo_key" "$branch" >&2; return 1; }
-  if test -n "$(git -C "$path" status --porcelain)"; then
-    printf '[FAIL] code=DIRTY_WORKTREE repo=%s observed=dirty recovery=commit_or_clean\n' "$repo_key" >&2
-    return 1
-  fi
-  local_sha=$(git -C "$path" rev-parse HEAD)
-  cached_sha=$(git -C "$path" rev-parse refs/remotes/origin/main 2>/dev/null || true)
-  live_sha=$(git -C "$path" ls-remote origin refs/heads/main | awk 'NR == 1 { print $1 }')
-  test -n "$cached_sha" || { printf '[FAIL] code=CACHED_MAIN_MISSING repo=%s recovery=fetch_origin_main\n' "$repo_key" >&2; return 1; }
-  test "$local_sha" = "$cached_sha" || { printf '[FAIL] code=LOCAL_CACHED_MISMATCH repo=%s expected=%s observed=%s recovery=reconcile_main\n' "$repo_key" "$cached_sha" "$local_sha" >&2; return 1; }
-  test "$cached_sha" = "$live_sha" || { printf '[FAIL] code=STALE_CACHED_MAIN repo=%s expected=%s observed=%s recovery=fetch_then_restart\n' "$repo_key" "$live_sha" "$cached_sha" >&2; return 1; }
-  identity=$(github_current_identity "$OLD_REPO" "$NEW_REPO") || { printf '[FAIL] code=GITHUB_REPO_MISSING repo=%s recovery=inspect_github\n' "$repo_key" >&2; return 1; }
-  repo_id=${identity%%|*}
-  # shellcheck disable=SC2153
-  test "$repo_id" = "$EXPECTED_ID" || { printf '[FAIL] code=REPOSITORY_ID_MISMATCH repo=%s expected=%s observed=%s recovery=stop_and_inspect\n' "$repo_key" "$EXPECTED_ID" "$repo_id" >&2; return 1; }
-  permission=${identity##*|}
-  test "$permission" = ADMIN || { printf '[FAIL] code=ADMIN_REQUIRED repo=%s observed=%s recovery=request_admin\n' "$repo_key" "$permission" >&2; return 1; }
-  printf '[PASS] repo=%s branch=main sha=%s permission=ADMIN\n' "$repo_key" "$local_sha"
-}
-
-preflight_workspace() {
-  workspace_root=$1
-  only_key=$2
-  for tool in git gh jq rg; do
-    command -v "$tool" >/dev/null 2>&1 || { emit_failure TOOL_MISSING "$tool" absent install_tool; return 1; }
-  done
-  gh auth status >/dev/null 2>&1 || { emit_failure GH_AUTH auth failed login; return 1; }
-  failed=0
-  if test -n "$only_key"; then
-    preflight_repository "$workspace_root" "$only_key" || failed=1
-  else
-    for key in $(repository_keys); do
-      preflight_repository "$workspace_root" "$key" || failed=1
-    done
-  fi
-  test "$failed" -eq 0
-}
-
 detect_repository_state() {
   workspace_root=$1
   repo_key=$2
@@ -171,6 +126,10 @@ detect_repository_state() {
   new_exists=no
   test -d "$old_path/.git" && old_exists=yes
   test -d "$new_path/.git" && new_exists=yes
+  if test "$old_exists" = yes && { test -e "$new_path" || test -L "$new_path"; } && test "$new_exists" = no; then
+    emit_failure DESTINATION_OCCUPIED "$new_path" present clear_destination
+    return 1
+  fi
   if test "$old_exists" = yes && test "$new_exists" = yes; then
     emit_failure BOTH_PATHS_EXIST "$workspace_root" ambiguous remove_unrelated_destination
     return 1
@@ -181,6 +140,7 @@ detect_repository_state() {
   fi
   identity=$(github_current_identity "$OLD_REPO" "$NEW_REPO") || { emit_failure REPOSITORY_NOT_FOUND "$OLD_REPO" absent inspect_github; return 1; }
   repo_id=${identity%%|*}
+  # shellcheck disable=SC2153
   test "$repo_id" = "$EXPECTED_ID" || { emit_failure REPOSITORY_ID_MISMATCH "$repo_key" "$repo_id" stop_and_inspect; return 1; }
   remainder=${identity#*|}
   current_name=${remainder%%|*}
@@ -229,6 +189,8 @@ write_journal() {
   expected_sha=$4
   old_fetch=$5
   old_push=$6
+  new_fetch=$(rewrite_repository_url "$old_fetch" "$OLD_REPO" "$NEW_REPO")
+  new_push=$(rewrite_repository_url "$old_push" "$OLD_REPO" "$NEW_REPO")
   state_root=$(state_directory)
   mkdir -p "$state_root"
   chmod 700 "$state_root"
@@ -241,6 +203,13 @@ write_journal() {
     printf 'expected_sha=%s\n' "$expected_sha"
     printf 'old_fetch=%s\n' "$old_fetch"
     printf 'old_push=%s\n' "$old_push"
+    printf 'new_fetch=%s\n' "$new_fetch"
+    printf 'new_push=%s\n' "$new_push"
+    printf 'old_path_rel=%s\n' "$OLD_PATH_REL"
+    printf 'new_path_rel=%s\n' "$NEW_PATH_REL"
+    printf 'description=%s\n' "$NEW_DESCRIPTION"
+    printf 'transition_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    printf 'app_gate=%s\n' "${PORTFOLIO_APP_GATE:-pending}"
   } > "$temporary"
   chmod 600 "$temporary"
   mv "$temporary" "$journal"
@@ -325,6 +294,7 @@ migrate_repository() {
     emit_failure DIRTY_WORKTREE "$active_path" dirty commit_or_clean
     return 1
   fi
+  test ! -L "$active_path" || { emit_failure SOURCE_SYMLINK "$active_path" symlink use_real_checkout; return 1; }
   identity=$(github_current_identity "$OLD_REPO" "$NEW_REPO") || { emit_failure REPOSITORY_NOT_FOUND "$OLD_REPO" absent inspect_github; return 1; }
   repo_id=${identity%%|*}
   test "$repo_id" = "$EXPECTED_ID" || { emit_failure REPOSITORY_ID_MISMATCH "$repo_key" "$repo_id" stop_and_inspect; return 1; }
@@ -343,6 +313,8 @@ migrate_repository() {
     expected_sha=$(git -C "$active_path" rev-parse HEAD)
     old_fetch=$(git -C "$active_path" remote get-url origin)
     old_push=$(git -C "$active_path" remote get-url --push origin)
+    validate_origin_url "$old_fetch" "$OLD_REPO" || return 1
+    validate_origin_url "$old_push" "$OLD_REPO" || return 1
     write_journal "$repo_key" "$current_state" "$repo_id" "$expected_sha" "$old_fetch" "$old_push"
   fi
   if test "$current_state" = BASELINE && test "$RENAME_REMOTE" = yes; then
@@ -386,4 +358,12 @@ migrate_repository() {
   rm -rf "$lock"
   trap - EXIT HUP INT TERM
   printf 'MIGRATED repo=%s state=VERIFIED reverse=mv_%s_to_%s\n' "$repo_key" "$NEW_PATH_REL" "$OLD_PATH_REL"
+}
+
+validate_test_mode_scope() {
+  workspace_root=$1
+  test "${PORTFOLIO_TEST_MODE:-0}" = 1 || return 0
+  case "$workspace_root" in /tmp/*|/private/tmp/*|/var/folders/*) ;; *) emit_failure TEST_MODE_FORBIDDEN "$workspace_root" canonical_workspace unset_test_mode; return 1 ;; esac
+  test -n "${PORTFOLIO_STATE_DIR:-}" || { emit_failure TEST_STATE_DIR_REQUIRED "$workspace_root" missing set_temp_state_dir; return 1; }
+  case "$PORTFOLIO_STATE_DIR" in "$workspace_root"/*) ;; *) emit_failure TEST_STATE_DIR_FORBIDDEN "$PORTFOLIO_STATE_DIR" outside_fixture use_fixture_state; return 1 ;; esac
 }

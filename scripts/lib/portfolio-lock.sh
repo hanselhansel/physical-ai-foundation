@@ -18,8 +18,8 @@ acquire_repository_lock() {
           emit_failure LOCK_EXISTS "$lock" "live_pid_$owner_pid" wait_for_owner
           return 1
         fi
-        rm -rf "$lock"
-        printf '[RECOVER] code=STALE_LOCK_CLEARED repo=%s owner_pid=%s\n' "$repo_key" "$owner_pid" >&2
+        printf '[FAIL] code=STALE_LOCK repo=%s owner_pid=%s recovery=remove_stale_lock_then_retry\n' "$repo_key" "$owner_pid" >&2
+        return 1
         ;;
     esac
   fi

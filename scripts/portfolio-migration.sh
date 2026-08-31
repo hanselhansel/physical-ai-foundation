@@ -10,6 +10,8 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 . "$SCRIPT_DIR/lib/github-adapter.sh"
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/lib/portfolio-lock.sh"
+# shellcheck disable=SC1091
+. "$SCRIPT_DIR/lib/portfolio-preflight.sh"
 
 usage() {
   printf 'usage: %s {preflight|status|migrate-one|verify} [options]\n' "$0" >&2
@@ -51,6 +53,8 @@ while test "$#" -gt 0; do
   esac
 done
 
+validate_test_mode_scope "$workspace_root"
+
 case "$command_name" in
   verify)
     verify_portfolio "$workspace_root"
@@ -71,6 +75,9 @@ case "$command_name" in
     ;;
   status)
     state=$(detect_repository_state "$workspace_root" "$repo_key") || exit 65
+    if test "$state" = VERIFIED; then
+      verify_migrated_repository "$workspace_root" "$repo_key" || exit 65
+    fi
     printf 'STATUS repo=%s state=%s\n' "$repo_key" "$state"
     ;;
   preflight)

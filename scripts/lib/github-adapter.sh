@@ -51,3 +51,12 @@ rewrite_repository_url() {
     *) emit_failure UNEXPECTED_REMOTE_URL "$url" unexpected inspect_remote; return 1 ;;
   esac
 }
+
+validate_origin_url() {
+  url=$1
+  repo_name=$2
+  case "$url" in
+    "https://github.com/hanselhansel/$repo_name"|"https://github.com/hanselhansel/$repo_name.git"|"git@github.com:hanselhansel/$repo_name.git") return 0 ;;
+    *) emit_failure ORIGIN_URL_NOT_ALLOWED "$url" wrong_owner_or_host repair_origin; return 1 ;;
+  esac
+}

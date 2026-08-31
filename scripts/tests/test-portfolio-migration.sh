@@ -3,6 +3,8 @@ set -euo pipefail
 
 TEST_DIR=$(cd "$(dirname "$0")" && pwd)
 RUNNER=$(cd "$TEST_DIR/.." && pwd)/portfolio-migration.sh
+# shellcheck disable=SC1091
+. "$TEST_DIR/test-helpers.sh"
 PASS_COUNT=0
 FAIL_COUNT=0
 
@@ -30,47 +32,6 @@ make_fixture() {
 run_verify() {
   workspace_root=$1
   "$RUNNER" verify --workspace-root "$workspace_root"
-}
-
-make_git_repo() {
-  repo=$1
-  git -C "$repo" init -q -b main
-  git -C "$repo" config user.name Test
-  git -C "$repo" config user.email test@example.com
-  printf 'fixture\n' > "$repo/tracked.txt"
-  git -C "$repo" add tracked.txt
-  git -C "$repo" commit -q -m fixture
-  git -C "$repo" remote add origin https://github.com/hanselhansel/physical-ai-foundation.git
-}
-
-make_git_repo_with_bare_origin() {
-  repo=$1
-  bare=$2
-  git init -q --bare "$bare"
-  git -C "$repo" init -q -b main
-  git -C "$repo" config user.name Test
-  git -C "$repo" config user.email test@example.com
-  printf 'fixture\n' > "$repo/tracked.txt"
-  git -C "$repo" add tracked.txt
-  git -C "$repo" commit -q -m fixture
-  git -C "$repo" remote add origin "$bare"
-  git -C "$repo" push -q -u origin main
-}
-
-make_fake_gh() {
-  bin_dir=$1
-  mkdir -p "$bin_dir"
-  # shellcheck disable=SC2016
-  printf '%s\n' '#!/bin/bash' 'set -eu' 'printf "%s\n" "$*" >> "$FAKE_GH_LOG"' 'if test "$1 $2" = "auth status"; then exit 0; fi' 'if test "$1 $2" = "repo view"; then' '  case "$3" in' '    hanselhansel/physical-ai-foundation) printf "%s\n" "{\"id\":\"R_kgDOUJNXtg\",\"name\":\"physical-ai-foundation\",\"url\":\"https://github.com/hanselhansel/physical-ai-foundation\",\"viewerPermission\":\"ADMIN\",\"defaultBranchRef\":{\"name\":\"main\"}}"; exit 0 ;;' '    hanselhansel/physical-ai-portfolio) exit 1 ;;' '  esac' 'fi' 'if test "$1 $2" = "repo rename"; then exit 0; fi' 'exit 1' > "$bin_dir/gh"
-  chmod +x "$bin_dir/gh"
-}
-
-make_stateful_fake_gh() {
-  bin_dir=$1
-  mkdir -p "$bin_dir"
-  # shellcheck disable=SC2016
-  printf '%s\n' '#!/bin/bash' 'set -eu' 'printf "%s\n" "$*" >> "$FAKE_GH_LOG"' 'current=$(cat "$FAKE_GH_STATE")' 'repo_id=${FAKE_GH_ID:-R_kgDOUJNXtg}' 'if test "$1 $2" = "auth status"; then exit 0; fi' 'if test "$1 $2" = "repo view"; then' '  requested=${3#hanselhansel/}' '  test "$requested" = "$current" || exit 1' '  printf "{\"id\":\"%s\",\"name\":\"%s\",\"url\":\"https://github.com/hanselhansel/%s\",\"viewerPermission\":\"ADMIN\",\"defaultBranchRef\":{\"name\":\"main\"}}\n" "$repo_id" "$current" "$current"' '  exit 0' 'fi' 'if test "$1 $2" = "repo rename"; then' '  printf "%s\n" "$3" > "$FAKE_GH_STATE"' '  exit 0' 'fi' 'if test "$1 $2" = "repo edit"; then exit 0; fi' 'exit 1' > "$bin_dir/gh"
-  chmod +x "$bin_dir/gh"
 }
 
 test_399_lines_passes() {
@@ -317,7 +278,7 @@ test_status_schema_validates_each_item_independently() {
   rm -rf "$root"
 }
 
-test_stale_lock_is_recovered_safely() {
+test_stale_lock_stops_with_explicit_recovery() {
   root=$(mktemp -d)
   mkdir -p "$root/foundation" "$root/state/portfolio.lock"
   make_git_repo "$root/foundation"
@@ -328,10 +289,67 @@ test_stale_lock_is_recovered_safely() {
   printf 'physical-ai-foundation\n' > "$FAKE_GH_STATE"
   : > "$FAKE_GH_LOG"
   output=$(PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" PORTFOLIO_APP_GATE=passed PORTFOLIO_TEST_MODE=1 "$RUNNER" migrate-one portfolio --workspace-root "$root" --apply 2>&1 || true)
-  if printf '%s' "$output" | grep -q 'STALE_LOCK_CLEARED' && printf '%s' "$output" | grep -q 'state=VERIFIED'; then
-    pass 'stale lock is cleared only after owner liveness check'
+  if printf '%s' "$output" | grep -q 'STALE_LOCK.*recovery=remove_stale_lock_then_retry' && ! grep -q '^repo rename' "$FAKE_GH_LOG"; then
+    pass 'stale lock stops without racing another process'
   else
-    fail 'stale lock had no safe recovery path'
+    fail 'stale lock recovery was not fail closed'
+  fi
+  rm -rf "$root"
+}
+
+test_occupied_destination_stops_before_remote_rename() {
+  root=$(mktemp -d)
+  mkdir -p "$root/foundation" "$root/portfolio"
+  make_git_repo "$root/foundation"
+  fake_bin="$root/fake-bin"
+  make_stateful_fake_gh "$fake_bin"
+  export FAKE_GH_LOG="$root/gh.log" FAKE_GH_STATE="$root/gh.state"
+  printf 'physical-ai-foundation\n' > "$FAKE_GH_STATE"
+  : > "$FAKE_GH_LOG"
+  output=$(PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" PORTFOLIO_APP_GATE=passed PORTFOLIO_TEST_MODE=1 "$RUNNER" migrate-one portfolio --workspace-root "$root" --apply 2>&1 || true)
+  if printf '%s' "$output" | grep -q 'DESTINATION_OCCUPIED' && ! grep -q '^repo rename' "$FAKE_GH_LOG"; then
+    pass 'occupied destination stops before remote rename'
+  else
+    fail 'occupied destination was checked after remote mutation'
+  fi
+  rm -rf "$root"
+}
+
+test_wrong_origin_owner_stops_before_remote_rename() {
+  root=$(mktemp -d)
+  mkdir -p "$root/foundation"
+  make_git_repo "$root/foundation"
+  git -C "$root/foundation" remote set-url origin https://github.com/other/physical-ai-foundation.git
+  fake_bin="$root/fake-bin"
+  make_stateful_fake_gh "$fake_bin"
+  export FAKE_GH_LOG="$root/gh.log" FAKE_GH_STATE="$root/gh.state"
+  printf 'physical-ai-foundation\n' > "$FAKE_GH_STATE"
+  : > "$FAKE_GH_LOG"
+  output=$(PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" PORTFOLIO_APP_GATE=passed PORTFOLIO_TEST_MODE=1 "$RUNNER" migrate-one portfolio --workspace-root "$root" --apply 2>&1 || true)
+  if printf '%s' "$output" | grep -q 'ORIGIN_URL_NOT_ALLOWED' && ! grep -q '^repo rename' "$FAKE_GH_LOG"; then
+    pass 'wrong origin owner stops before remote rename'
+  else
+    fail 'wrong origin owner was accepted'
+  fi
+  rm -rf "$root"
+}
+
+test_status_revalidates_verified_journal() {
+  root=$(mktemp -d)
+  mkdir -p "$root/foundation"
+  make_git_repo "$root/foundation"
+  fake_bin="$root/fake-bin"
+  make_stateful_fake_gh "$fake_bin"
+  export FAKE_GH_LOG="$root/gh.log" FAKE_GH_STATE="$root/gh.state"
+  printf 'physical-ai-foundation\n' > "$FAKE_GH_STATE"
+  : > "$FAKE_GH_LOG"
+  PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" PORTFOLIO_APP_GATE=passed PORTFOLIO_TEST_MODE=1 "$RUNNER" migrate-one portfolio --workspace-root "$root" --apply >/dev/null 2>&1
+  printf 'physical-ai-foundation\n' > "$FAKE_GH_STATE"
+  output=$(PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" PORTFOLIO_APP_GATE=passed PORTFOLIO_TEST_MODE=1 "$RUNNER" status portfolio --workspace-root "$root" 2>&1 || true)
+  if printf '%s' "$output" | grep -q 'VERIFICATION_FAILED' && ! printf '%s' "$output" | grep -q 'state=VERIFIED'; then
+    pass 'status revalidates a VERIFIED journal'
+  else
+    fail 'status trusted a stale VERIFIED journal'
   fi
   rm -rf "$root"
 }
@@ -349,7 +367,10 @@ test_wrong_repository_id_stops_before_mutation
 test_verified_journal_does_not_override_corrupt_live_state
 test_lane_dependency_blocks_out_of_order_migration
 test_status_schema_validates_each_item_independently
-test_stale_lock_is_recovered_safely
+test_stale_lock_stops_with_explicit_recovery
+test_occupied_destination_stops_before_remote_rename
+test_wrong_origin_owner_stops_before_remote_rename
+test_status_revalidates_verified_journal
 
 printf 'tests=%s failures=%s\n' "$((PASS_COUNT + FAIL_COUNT))" "$FAIL_COUNT"
 test "$FAIL_COUNT" -eq 0
