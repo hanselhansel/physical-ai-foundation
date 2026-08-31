@@ -98,4 +98,4 @@ Migration inventory output records counts and boolean results. It does not recor
 
 ## Next action
 
-The Portfolio lane is `VERIFIED`. Land the per-repository app-gate fix, then migrate Contributions, Outreach, and Warehouse in dependency order.
+The Portfolio lane is `VERIFIED`. Land the scoped runner-variable fix, then migrate Contributions, Outreach, and Warehouse in dependency order.

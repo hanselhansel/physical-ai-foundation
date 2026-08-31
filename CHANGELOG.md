@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0.2] - 2026-08-31
+
+### For contributors
+
+- Migration functions now keep repository keys and transient state local, so nested predecessor verification preserves the caller's active lane.
+- A regression assertion now protects the caller's repository key across nested verification.
+
 ## [0.1.0.1] - 2026-08-31
 
 ### Fixed

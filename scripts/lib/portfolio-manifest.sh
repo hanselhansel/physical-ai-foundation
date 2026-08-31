@@ -2,7 +2,7 @@
 # shellcheck disable=SC2034
 
 load_repository_manifest() {
-  repo_key=$1
+  local repo_key=$1
   case "$repo_key" in
     portfolio)
       OLD_PATH_REL=foundation

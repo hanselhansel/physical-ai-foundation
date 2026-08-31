@@ -1,8 +1,7 @@
 #!/bin/bash
 
 preflight_repository() {
-  workspace_root=$1
-  repo_key=$2
+  local workspace_root=$1 repo_key=$2 path new_path worktree_count branch local_sha fetch_url push_url cached_sha live_sha identity repo_id permission
   load_repository_manifest "$repo_key" || return 1
   path="$workspace_root/$OLD_PATH_REL"
   new_path="$workspace_root/$NEW_PATH_REL"
@@ -40,8 +39,7 @@ preflight_repository() {
 }
 
 preflight_workspace() {
-  workspace_root=$1
-  only_key=$2
+  local workspace_root=$1 only_key=$2 tool failed key
   for tool in git gh jq rg curl; do
     command -v "$tool" >/dev/null 2>&1 || { emit_failure TOOL_MISSING "$tool" absent install_tool; return 1; }
   done

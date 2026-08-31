@@ -94,6 +94,24 @@ test_live_lock_owner_stops() {
   rm -rf "$root"
 }
 
+test_nested_verification_preserves_caller_repository_key() {
+  root=$(mktemp -d)
+  mkdir -p "$root/portfolio"
+  make_git_repo "$root/portfolio"
+  fake_bin="$root/fake-bin"
+  make_stateful_fake_gh "$fake_bin"
+  export FAKE_GH_LOG="$root/gh.log" FAKE_GH_STATE="$root/gh.state"
+  printf 'physical-ai-portfolio\n' > "$FAKE_GH_STATE"
+  : > "$FAKE_GH_LOG"
+  lib_dir=$(cd "$TEST_DIR/../lib" && pwd)
+  if PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" ROOT_UNDER_TEST="$root" LIB_UNDER_TEST="$lib_dir" bash -c '. "$LIB_UNDER_TEST/portfolio-manifest.sh"; . "$LIB_UNDER_TEST/github-adapter.sh"; . "$LIB_UNDER_TEST/portfolio-state.sh"; outer(){ local repo_key=contributions; detect_repository_state "$ROOT_UNDER_TEST" portfolio >/dev/null; test "$repo_key" = contributions; }; outer'; then
+    pass 'nested verification preserves caller repository key'
+  else
+    fail 'nested verification overwrote caller repository key'
+  fi
+  rm -rf "$root"
+}
+
 test_app_gate_blocks_verified
 test_ssh_remote_is_preserved
 test_test_mode_rejected_for_canonical_workspace
@@ -101,5 +119,6 @@ test_status_revalidates_healthy_verified_state
 test_verify_rejects_broken_relative_link
 test_corrupt_lock_stops
 test_live_lock_owner_stops
+test_nested_verification_preserves_caller_repository_key
 printf 'tests=%s failures=%s\n' "$((passed + failed))" "$failed"
 test "$failed" -eq 0

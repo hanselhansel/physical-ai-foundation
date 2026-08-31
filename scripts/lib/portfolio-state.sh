@@ -1,15 +1,12 @@
 #!/bin/bash
 
 emit_failure() {
-  code=$1
-  path=$2
-  observed=$3
-  recovery=$4
+  local code=$1 path=$2 observed=$3 recovery=$4
   printf '[FAIL] code=%s path=%s observed=%s recovery=%s\n' "$code" "$path" "$observed" "$recovery" >&2
 }
 
 portfolio_root_for_workspace() {
-  workspace_root=$1
+  local workspace_root=$1
   if test -f "$workspace_root/README.md" && test -f "$workspace_root/STATUS.md"; then
     printf '%s\n' "$workspace_root"
   elif test -d "$workspace_root/portfolio"; then
@@ -23,7 +20,7 @@ portfolio_root_for_workspace() {
 }
 
 check_required_file() {
-  file=$1
+  local file=$1
   if test ! -f "$file"; then
     emit_failure REQUIRED_FILE_MISSING "$file" absent restore_file
     return 1
@@ -31,8 +28,7 @@ check_required_file() {
 }
 
 check_required_heading() {
-  file=$1
-  heading=$2
+  local file=$1 heading=$2
   if ! grep -Fqx "$heading" "$file"; then
     emit_failure REQUIRED_HEADING_MISSING "$file" "$heading" add_heading
     return 1
@@ -118,8 +114,7 @@ verify_portfolio() {
 }
 
 detect_repository_state() {
-  workspace_root=$1
-  repo_key=$2
+  local workspace_root=$1 repo_key=$2 old_path new_path old_exists new_exists identity repo_id remainder current_name journal journal_state origin
   load_repository_manifest "$repo_key" || return 1
   old_path="$workspace_root/$OLD_PATH_REL"
   new_path="$workspace_root/$NEW_PATH_REL"
@@ -173,23 +168,18 @@ state_directory() {
 }
 
 journal_path() {
+  local state_root
   state_root=$(state_directory)
   printf '%s/%s.journal\n' "$state_root" "$1"
 }
 
 journal_value() {
-  journal=$1
-  key=$2
+  local journal=$1 key=$2
   awk -F= -v wanted="$key" '$1 == wanted { sub(/^[^=]*=/, ""); print; exit }' "$journal"
 }
 
 write_journal() {
-  repo_key=$1
-  state=$2
-  repo_id=$3
-  expected_sha=$4
-  old_fetch=$5
-  old_push=$6
+  local repo_key=$1 state=$2 repo_id=$3 expected_sha=$4 old_fetch=$5 old_push=$6 new_fetch new_push state_root journal temporary
   new_fetch=$(rewrite_repository_url "$old_fetch" "$OLD_REPO" "$NEW_REPO")
   new_push=$(rewrite_repository_url "$old_push" "$OLD_REPO" "$NEW_REPO")
   state_root=$(state_directory)
@@ -217,8 +207,7 @@ write_journal() {
 }
 
 verify_migrated_repository() {
-  workspace_root=$1
-  repo_key=$2
+  local workspace_root=$1 repo_key=$2 journal expected_id expected_sha old_fetch old_push old_path new_path local_sha identity repo_id remainder current_name permission expected_fetch expected_push cached_sha live_sha description effective journal_state journal_app_gate
   load_repository_manifest "$repo_key" || return 1
   journal=$(journal_path "$repo_key")
   test -f "$journal" || { emit_failure VERIFICATION_FAILED "$repo_key" journal_missing restore_journal; return 1; }
@@ -267,8 +256,7 @@ verify_migrated_repository() {
 }
 
 migrate_repository() {
-  workspace_root=$1
-  repo_key=$2
+  local workspace_root=$1 repo_key=$2 predecessor_journal predecessor_state lock old_path new_path current_state active_path identity repo_id remainder current_name permission journal expected_id expected_sha old_fetch old_push new_id new_fetch new_push
   load_repository_manifest "$repo_key" || return 1
   if test -n "$PREDECESSOR"; then
     predecessor_journal=$(journal_path "$PREDECESSOR")
@@ -368,7 +356,7 @@ migrate_repository() {
 }
 
 validate_test_mode_scope() {
-  workspace_root=$1
+  local workspace_root=$1
   test "${PORTFOLIO_TEST_MODE:-0}" = 1 || return 0
   case "$workspace_root" in /tmp/*|/private/tmp/*|/var/folders/*) ;; *) emit_failure TEST_MODE_FORBIDDEN "$workspace_root" canonical_workspace unset_test_mode; return 1 ;; esac
   test -n "${PORTFOLIO_STATE_DIR:-}" || { emit_failure TEST_STATE_DIR_REQUIRED "$workspace_root" missing set_temp_state_dir; return 1; }
