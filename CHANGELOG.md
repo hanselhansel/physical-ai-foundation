@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.0.3] - 2026-08-31
+
+### Changed
+
+- The portfolio landing page, status, and migration decision now record all four repository lanes as `VERIFIED` and point to the canonical Contributions, Outreach, and Warehouse locations.
+- The next portfolio decision is now the flagship experiment charter.
+
+### Fixed
+
+- Expected app-gate stops now remove the active migration lock without emitting a Bash `unbound variable` error.
+- A regression assertion now requires clean app-gate termination.
+
 ## [0.1.0.2] - 2026-08-31
 
 ### For contributors
