@@ -2,6 +2,11 @@
 
 Umbrella repo for the Physical AI Foundation sprint.
 
+## Focus
+
+Product, deployment, and solutions engineering for warehouse/logistics Physical AI.
+No customer discovery and no live events in this sprint.
+
 ## Contents
 
 - `docs/papers/` — paper summaries and annotations.
@@ -9,6 +14,6 @@ Umbrella repo for the Physical AI Foundation sprint.
 - `docs/decisions/` — tooling, architecture, and direction decisions.
 - `README.md` — this file.
 
-## Sprint goal
+## Status
 
-Build deep understanding, demonstrated capability, real open-source contributions, and a network in Physical AI over three months.
+This is a 3-month sprint. See `docs/logs/` for weekly progress.
