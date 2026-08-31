@@ -37,7 +37,7 @@ test_app_gate_blocks_verified() {
   setup_portfolio_fixture "$root"
   output=$(PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" PORTFOLIO_TEST_MODE=1 "$RUNNER" migrate-one portfolio --workspace-root "$root" --apply 2>&1 || true)
   state=$(awk -F= '$1 == "state" { print $2 }' "$root/state/portfolio.journal")
-  if printf '%s' "$output" | grep -q 'APP_GATE_PENDING' && test "$state" = METADATA_UPDATED; then pass 'app gate blocks VERIFIED'; else fail 'app gate did not block VERIFIED'; fi
+  if printf '%s' "$output" | grep -q 'APP_GATE_PENDING' && ! printf '%s' "$output" | grep -q 'unbound variable' && test "$state" = METADATA_UPDATED; then pass 'app gate blocks VERIFIED without cleanup errors'; else fail 'app gate did not fail cleanly'; fi
   rm -rf "$root"
 }
 

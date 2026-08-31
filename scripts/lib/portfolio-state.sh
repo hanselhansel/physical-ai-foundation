@@ -269,7 +269,8 @@ migrate_repository() {
     load_repository_manifest "$repo_key" || return 1
   fi
   lock=$(acquire_repository_lock "$repo_key") || return 1
-  trap 'rm -rf "$lock"' EXIT HUP INT TERM
+  PORTFOLIO_ACTIVE_LOCK=$lock
+  trap 'test -n "${PORTFOLIO_ACTIVE_LOCK:-}" && rm -rf "$PORTFOLIO_ACTIVE_LOCK"' EXIT HUP INT TERM
   old_path="$workspace_root/$OLD_PATH_REL"
   new_path="$workspace_root/$NEW_PATH_REL"
   current_state=$(detect_repository_state "$workspace_root" "$repo_key") || return 1
@@ -280,6 +281,7 @@ migrate_repository() {
     verify_migrated_repository "$workspace_root" "$repo_key" || return 1
     printf 'MIGRATED repo=%s state=VERIFIED idempotent=yes\n' "$repo_key"
     rm -rf "$lock"
+    PORTFOLIO_ACTIVE_LOCK=
     trap - EXIT HUP INT TERM
     return 0
   fi
@@ -351,6 +353,7 @@ migrate_repository() {
   verify_migrated_repository "$workspace_root" "$repo_key" || return 1
   write_journal "$repo_key" VERIFIED "$repo_id" "$expected_sha" "$old_fetch" "$old_push"
   rm -rf "$lock"
+  PORTFOLIO_ACTIVE_LOCK=
   trap - EXIT HUP INT TERM
   printf 'MIGRATED repo=%s state=VERIFIED reverse=mv_%s_to_%s\n' "$repo_key" "$NEW_PATH_REL" "$OLD_PATH_REL"
 }
