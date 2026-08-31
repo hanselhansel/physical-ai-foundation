@@ -1,7 +1,7 @@
 #!/bin/bash
 
 acquire_repository_lock() {
-  repo_key=$1
+  local repo_key=$1 state_root lock owner_pid
   state_root=$(state_directory)
   mkdir -p "$state_root"
   chmod 700 "$state_root"
