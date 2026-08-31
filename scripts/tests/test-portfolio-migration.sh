@@ -21,7 +21,7 @@ make_fixture() {
   portfolio_root="$fixture_root/foundation"
   mkdir -p "$portfolio_root/docs/templates"
   printf '# Portfolio\n\n## Portfolio\n## Projects\n## Contributions\n## Outreach\n## Forks\n' > "$portfolio_root/README.md"
-  printf '# Status\n\nTitle: Migration\nCategory: Portfolio\nObjective: Test\nWorkflow status: Active\nSuccess criteria: Green\nRequired validation: Runtime\nEvidence links: none\nResult: pending\nLimitations: none\nNext decision: run\nAuthority: fixture\nObserved at: now\nSource commit: abc\nFresh until: later\nRecheck command: test\n' > "$portfolio_root/STATUS.md"
+  printf '# Status\n\n## Migration\n\n- **Title:** Migration\n- **Category:** Portfolio\n- **Objective:** Test\n- **Workflow status:** Active\n- **Success criteria:** Green\n- **Required validation:** Runtime\n- **Evidence links:** none\n- **Result:** pending\n- **Limitations:** none\n- **Next decision:** run\n- **Authority:** fixture\n- **Observed at:** now\n- **Source commit:** abc\n- **Fresh until:** later\n- **Recheck command:** test\n' > "$portfolio_root/STATUS.md"
   printf '# Roadmap\n' > "$portfolio_root/ROADMAP.md"
   printf '# Item\n' > "$portfolio_root/docs/templates/portfolio-item.md"
   printf '# Experiment\n' > "$portfolio_root/docs/templates/runtime-experiment.md"
@@ -216,6 +216,35 @@ test_preflight_fails_on_dirty_canonical_main() {
   rm -rf "$root"
 }
 
+test_verify_accepts_direct_portfolio_checkout() {
+  root=$(mktemp -d)
+  make_fixture "$root"
+  if "$RUNNER" verify --workspace-root "$root/foundation" >/dev/null 2>&1; then
+    pass 'verify accepts an isolated portfolio checkout root'
+  else
+    fail 'verify rejected an isolated portfolio checkout root'
+  fi
+  rm -rf "$root"
+}
+
+test_verify_rejects_missing_status_field() {
+  root=$(mktemp -d)
+  make_fixture "$root"
+  grep -v '^- \*\*Fresh until:' "$root/foundation/STATUS.md" > "$root/foundation/STATUS.tmp"
+  mv "$root/foundation/STATUS.tmp" "$root/foundation/STATUS.md"
+  if output=$(run_verify "$root" 2>&1); then
+    status=0
+  else
+    status=$?
+  fi
+  if test "$status" -ne 0 && printf '%s' "$output" | grep -q 'STATUS_FIELD_MISSING.*Fresh until'; then
+    pass 'verify rejects a status item missing a required field'
+  else
+    fail 'verify accepted a status item with a missing required field'
+  fi
+  rm -rf "$root"
+}
+
 test_399_lines_passes
 test_400_lines_fails_without_total_row_false_positive
 test_migrate_dry_run_has_zero_mutations
@@ -223,6 +252,8 @@ test_migrate_apply_reaches_verified
 test_dirty_worktree_stops_before_remote_mutation
 test_resume_after_remote_rename
 test_preflight_fails_on_dirty_canonical_main
+test_verify_accepts_direct_portfolio_checkout
+test_verify_rejects_missing_status_field
 
 printf 'tests=%s failures=%s\n' "$((PASS_COUNT + FAIL_COUNT))" "$FAIL_COUNT"
 test "$FAIL_COUNT" -eq 0

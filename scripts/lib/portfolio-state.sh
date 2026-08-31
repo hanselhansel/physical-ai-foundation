@@ -10,7 +10,9 @@ emit_failure() {
 
 portfolio_root_for_workspace() {
   workspace_root=$1
-  if test -d "$workspace_root/portfolio"; then
+  if test -f "$workspace_root/README.md" && test -f "$workspace_root/STATUS.md"; then
+    printf '%s\n' "$workspace_root"
+  elif test -d "$workspace_root/portfolio"; then
     printf '%s\n' "$workspace_root/portfolio"
   elif test -d "$workspace_root/foundation"; then
     printf '%s\n' "$workspace_root/foundation"
@@ -38,7 +40,7 @@ check_required_heading() {
 }
 
 check_line_limits() {
-  root=$1
+  local root=$1 list_file failed file lines
   list_file=$(mktemp)
   find "$root" -path '*/.git' -prune -o -type f \( -name '*.md' -o -name '*.sh' \) -print > "$list_file"
   failed=0
@@ -53,8 +55,23 @@ check_line_limits() {
   test "$failed" -eq 0
 }
 
+check_status_schema() {
+  local status_file=$1 item_count failed label count
+  item_count=$(grep -c '^## ' "$status_file" || true)
+  test "$item_count" -gt 0 || { emit_failure STATUS_ITEMS_MISSING "$status_file" zero add_status_item; return 1; }
+  failed=0
+  for label in Title Category Objective 'Workflow status' 'Success criteria' 'Required validation' 'Evidence links' Result Limitations 'Next decision' Authority 'Observed at' 'Source commit' 'Fresh until' 'Recheck command'; do
+    count=$(grep -F -c -- "- **$label:**" "$status_file" || true)
+    if test "$count" -ne "$item_count"; then
+      printf '[FAIL] code=STATUS_FIELD_MISSING path=%s field=%s expected=%s observed=%s recovery=complete_status_schema\n' "$status_file" "$label" "$item_count" "$count" >&2
+      failed=1
+    fi
+  done
+  test "$failed" -eq 0
+}
+
 verify_portfolio() {
-  workspace_root=$1
+  local workspace_root=$1 root failed file heading
   root=$(portfolio_root_for_workspace "$workspace_root") || return 1
   failed=0
   for file in README.md STATUS.md ROADMAP.md docs/templates/portfolio-item.md docs/templates/runtime-experiment.md; do
@@ -64,6 +81,9 @@ verify_portfolio() {
     for heading in '## Portfolio' '## Projects' '## Contributions' '## Outreach' '## Forks'; do
       check_required_heading "$root/README.md" "$heading" || failed=1
     done
+  fi
+  if test -f "$root/STATUS.md"; then
+    check_status_schema "$root/STATUS.md" || failed=1
   fi
   check_line_limits "$root" || failed=1
   test "$failed" -eq 0
