@@ -12,12 +12,12 @@ The sprint focuses on product management, deployment, and solutions engineering 
 
 - GPU training is not in scope.
 - Isaac Sim can be used at a scenario level later, but a full Linux GPU environment is not needed now.
-- ROS 2 and middleware/integration work run comfortably in a local Docker container.
+- ROS 2 and middleware/integration work can run in local containers. Open-RMF runtime performance has not yet been validated on this host.
 
 ## Tooling
 
 - Docker Desktop on Mac.
-- ROS 2 Humble container in `warehouse-deployment/docker/ros2-humble/`.
+- ROS 2 Humble container in the [warehouse project](https://github.com/hanselhansel/pai-warehouse-deployment/tree/main/docker/ros2-humble).
 - No persistent cloud instance.
 
 ## Revisit when

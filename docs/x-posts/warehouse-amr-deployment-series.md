@@ -1,8 +1,8 @@
 # X Post Series: Warehouse AMR Deployment
 
-A 12-post series for X, drafted in short declarative sentences with concrete numbers. Each post is designed to stand alone. You can publish them in order or spaced out across the sprint.
+Status: Parked, not publication-ready.
 
-Suggested schedule: 3 posts per week for 4 weeks.
+A 12-post draft series for X. Every quantitative claim requires a permanent source link, source date, fact-check date, and approved wording before publication. Restart only after a validated portfolio case is approved for external communication.
 
 ## Post 1: Why deployments fail
 
@@ -58,6 +58,6 @@ Roll back a robot pilot if: throughput gain is below 10%, error rate rises, upti
 
 ## Related artifacts
 
-- Full playbook: `warehouse-deployment/docs/playbook.md`
-- Vendor matrix: `warehouse-deployment/docs/vendor-matrix.md`
-- Case study: `warehouse-deployment/docs/case-study-walmart-symbotic.md`
+- [Full playbook](https://github.com/hanselhansel/pai-warehouse-deployment/blob/main/docs/playbook.md)
+- [Vendor matrix](https://github.com/hanselhansel/pai-warehouse-deployment/blob/main/docs/vendor-matrix.md)
+- [Case study](https://github.com/hanselhansel/pai-warehouse-deployment/blob/main/docs/case-study-walmart-symbotic.md)
