@@ -15,10 +15,10 @@ The execution repository owns detailed evidence. This file holds concise cross-p
 - **Evidence links:** [Design](docs/superpowers/specs/2026-08-31-physical-ai-portfolio-operating-model-design.md), [plan](docs/superpowers/plans/2026-08-31-physical-ai-portfolio-reorganization.md), [baseline](docs/decisions/2026-08-31-portfolio-reorganization.md).
 - **Result:** The Portfolio repository is renamed, moved, and `VERIFIED`. Contributions, Outreach, and Warehouse remain at `BASELINE`.
 - **Limitations:** Final state still depends on the three remaining sequential migration lanes and final reconciliation.
-- **Next decision:** Land the per-repository app-gate fix, then migrate Contributions.
+- **Next decision:** Land the scoped runner-variable fix, then migrate Contributions.
 - **Authority:** Portfolio repository and live GitHub refs.
 - **Observed at:** 2026-08-31
-- **Source commit:** `a1f8eba420e06079945afb5d7ecc811a385ccfd9` on live `physical-ai-portfolio/main`; the app-gate fix is on the current branch.
+- **Source commit:** `98d10b3f5050f6edeb7df73274b576b391801853` on live `physical-ai-portfolio/main`; the scoped runner-variable fix is on the current branch.
 - **Fresh until:** 2026-09-01
 - **Recheck command:** `bash scripts/portfolio-migration.sh status portfolio`
 - **Active project:** Yes

@@ -7,7 +7,7 @@ Hansel's learning and evidence portfolio for Physical AI product, deployment, in
 - **Active project:** [Portfolio reorganization](docs/decisions/2026-08-31-portfolio-reorganization.md).
 - **Current checkpoint:** The Portfolio repository is renamed, moved, and `VERIFIED`. Contributions, Outreach, and Warehouse remain at `BASELINE`.
 - **Evidence state:** [Status](STATUS.md) distinguishes written, reviewed, runtime, and external evidence.
-- **Next decision:** Land the per-repository app-gate fix, then migrate Contributions, Outreach, and Warehouse in dependency order.
+- **Next decision:** Land the scoped runner-variable fix, then migrate Contributions, Outreach, and Warehouse in dependency order.
 - **Candidate experiment:** Open Robotics Middleware Framework (Open-RMF) office demo. Runtime unvalidated. A flagship experiment charter must select it before execution.
 
 See [ROADMAP.md](ROADMAP.md) for ordering and gates.
