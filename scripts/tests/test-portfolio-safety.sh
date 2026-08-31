@@ -60,7 +60,7 @@ test_status_revalidates_healthy_verified_state() {
   root=$(mktemp -d)
   setup_portfolio_fixture "$root"
   PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" PORTFOLIO_APP_GATE=passed PORTFOLIO_TEST_MODE=1 "$RUNNER" migrate-one portfolio --workspace-root "$root" --apply >/dev/null 2>&1
-  output=$(PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" PORTFOLIO_APP_GATE=passed PORTFOLIO_TEST_MODE=1 "$RUNNER" status portfolio --workspace-root "$root")
+  output=$(PATH="$fake_bin:$PATH" PORTFOLIO_STATE_DIR="$root/state" PORTFOLIO_TEST_MODE=1 "$RUNNER" status portfolio --workspace-root "$root")
   if printf '%s' "$output" | grep -q 'state=VERIFIED'; then pass 'status revalidates healthy VERIFIED state'; else fail 'healthy VERIFIED state failed readback'; fi
   rm -rf "$root"
 }

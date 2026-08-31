@@ -257,7 +257,13 @@ verify_migrated_repository() {
       test "${effective%/}" = "https://github.com/hanselhansel/$NEW_REPO" || { emit_failure VERIFICATION_FAILED "$repo_key" redirect_mismatch inspect_redirect; return 1; }
     fi
   fi
-  test "${PORTFOLIO_APP_GATE:-pending}" = passed || { emit_failure VERIFICATION_FAILED "$repo_key" app_gate_pending run_app_project_readback; return 1; }
+  journal_state=$(journal_value "$journal" state)
+  journal_app_gate=$(journal_value "$journal" app_gate)
+  if test "$journal_state" = VERIFIED; then
+    test "$journal_app_gate" = passed || { emit_failure VERIFICATION_FAILED "$repo_key" journal_app_gate_missing rerun_app_project_readback; return 1; }
+  else
+    test "${PORTFOLIO_APP_GATE:-pending}" = passed || { emit_failure VERIFICATION_FAILED "$repo_key" app_gate_pending run_app_project_readback; return 1; }
+  fi
 }
 
 migrate_repository() {
