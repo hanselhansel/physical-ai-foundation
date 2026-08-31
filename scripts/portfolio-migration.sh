@@ -8,6 +8,8 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 . "$SCRIPT_DIR/lib/portfolio-manifest.sh"
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/lib/github-adapter.sh"
+# shellcheck disable=SC1091
+. "$SCRIPT_DIR/lib/portfolio-lock.sh"
 
 usage() {
   printf 'usage: %s {preflight|status|migrate-one|verify} [options]\n' "$0" >&2

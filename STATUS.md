@@ -40,7 +40,7 @@ The execution repository owns detailed evidence. This file holds concise cross-p
 - **Observed at:** 2026-08-31
 - **Source commit:** `aa11e3a70cd085073550509665276f095bf92643`
 - **Fresh until:** 2026-09-30
-- **Recheck command:** `git -C ../projects/warehouse-deployment log -1 --format=%H`
+- **Recheck command:** `git -C ../warehouse-deployment log -1 --format=%H` until migration, then canonicalize to `../projects/warehouse-deployment`.
 - **Active project:** No
 - **Candidate experiment:** Open-RMF office demo, runtime unvalidated
 
@@ -96,7 +96,7 @@ The execution repository owns detailed evidence. This file holds concise cross-p
 - **Observed at:** 2026-08-31
 - **Source commit:** `b91b56b2455c531a6bcec596f6b41dcb173feafe`
 - **Fresh until:** 2026-09-30
-- **Recheck command:** `git -C ../outreach status --short --branch`
+- **Recheck command:** `git -C ../community status --short --branch` until migration, then canonicalize to `../outreach`.
 
 ## Compute decision
 

@@ -55,18 +55,45 @@ check_line_limits() {
   test "$failed" -eq 0
 }
 
-check_status_schema() {
-  local status_file=$1 item_count failed label count
-  item_count=$(grep -c '^## ' "$status_file" || true)
-  test "$item_count" -gt 0 || { emit_failure STATUS_ITEMS_MISSING "$status_file" zero add_status_item; return 1; }
-  failed=0
+check_status_section() {
+  local status_file=$1 section=$2 section_file=$3 failed=0 label count status_value
   for label in Title Category Objective 'Workflow status' 'Success criteria' 'Required validation' 'Evidence links' Result Limitations 'Next decision' Authority 'Observed at' 'Source commit' 'Fresh until' 'Recheck command'; do
-    count=$(grep -F -c -- "- **$label:**" "$status_file" || true)
-    if test "$count" -ne "$item_count"; then
-      printf '[FAIL] code=STATUS_FIELD_MISSING path=%s field=%s expected=%s observed=%s recovery=complete_status_schema\n' "$status_file" "$label" "$item_count" "$count" >&2
+    count=$(grep -F -c -- "- **$label:**" "$section_file" || true)
+    if test "$count" -ne 1; then
+      printf '[FAIL] code=STATUS_FIELD_MISSING path=%s section=%s field=%s expected=1 observed=%s recovery=complete_status_schema\n' "$status_file" "$section" "$label" "$count" >&2
       failed=1
     fi
   done
+  status_value=$(sed -n 's/^- \*\*Workflow status:\*\* //p' "$section_file")
+  case "$status_value" in Backlog|Ready|Active|Waiting|Complete|Parked|Dropped) ;; *) printf '[FAIL] code=STATUS_VALUE_INVALID path=%s section=%s field=Workflow_status observed=%s recovery=use_allowed_status\n' "$status_file" "$section" "$status_value" >&2; failed=1 ;; esac
+  test "$failed" -eq 0
+}
+
+# shellcheck disable=SC2094
+check_status_schema() {
+  local status_file=$1 section='' section_file failed=0 line found=0
+  section_file=$(mktemp)
+  : > "$section_file"
+  while IFS= read -r line || test -n "$line"; do
+    case "$line" in
+      '## '*)
+        if test -n "$section"; then
+          check_status_section "$status_file" "$section" "$section_file" || failed=1
+        fi
+        section=${line#'## '}
+        found=1
+        : > "$section_file"
+        ;;
+      *)
+        test -n "$section" && printf '%s\n' "$line" >> "$section_file"
+        ;;
+    esac
+  done < "$status_file"
+  if test -n "$section"; then
+    check_status_section "$status_file" "$section" "$section_file" || failed=1
+  fi
+  rm -f "$section_file"
+  test "$found" -eq 1 || { emit_failure STATUS_ITEMS_MISSING "$status_file" zero add_status_item; return 1; }
   test "$failed" -eq 0
 }
 
@@ -108,6 +135,9 @@ preflight_repository() {
   test "$local_sha" = "$cached_sha" || { printf '[FAIL] code=LOCAL_CACHED_MISMATCH repo=%s expected=%s observed=%s recovery=reconcile_main\n' "$repo_key" "$cached_sha" "$local_sha" >&2; return 1; }
   test "$cached_sha" = "$live_sha" || { printf '[FAIL] code=STALE_CACHED_MAIN repo=%s expected=%s observed=%s recovery=fetch_then_restart\n' "$repo_key" "$live_sha" "$cached_sha" >&2; return 1; }
   identity=$(github_current_identity "$OLD_REPO" "$NEW_REPO") || { printf '[FAIL] code=GITHUB_REPO_MISSING repo=%s recovery=inspect_github\n' "$repo_key" >&2; return 1; }
+  repo_id=${identity%%|*}
+  # shellcheck disable=SC2153
+  test "$repo_id" = "$EXPECTED_ID" || { printf '[FAIL] code=REPOSITORY_ID_MISMATCH repo=%s expected=%s observed=%s recovery=stop_and_inspect\n' "$repo_key" "$EXPECTED_ID" "$repo_id" >&2; return 1; }
   permission=${identity##*|}
   test "$permission" = ADMIN || { printf '[FAIL] code=ADMIN_REQUIRED repo=%s observed=%s recovery=request_admin\n' "$repo_key" "$permission" >&2; return 1; }
   printf '[PASS] repo=%s branch=main sha=%s permission=ADMIN\n' "$repo_key" "$local_sha"
@@ -150,6 +180,8 @@ detect_repository_state() {
     return 1
   fi
   identity=$(github_current_identity "$OLD_REPO" "$NEW_REPO") || { emit_failure REPOSITORY_NOT_FOUND "$OLD_REPO" absent inspect_github; return 1; }
+  repo_id=${identity%%|*}
+  test "$repo_id" = "$EXPECTED_ID" || { emit_failure REPOSITORY_ID_MISMATCH "$repo_key" "$repo_id" stop_and_inspect; return 1; }
   remainder=${identity#*|}
   current_name=${remainder%%|*}
   if test "$new_exists" = yes; then
@@ -214,42 +246,74 @@ write_journal() {
   mv "$temporary" "$journal"
 }
 
-rewrite_repository_url() {
-  url=$1
-  old_name=$2
-  new_name=$3
-  case "$url" in
-    *"/$old_name.git") printf '%s%s.git\n' "${url%/"$old_name".git}/" "$new_name" ;;
-    *"/$old_name") printf '%s%s\n' "${url%/"$old_name"}/" "$new_name" ;;
-    *":$old_name.git") printf '%s%s.git\n' "${url%:"$old_name".git}:" "$new_name" ;;
-    *) emit_failure UNEXPECTED_REMOTE_URL "$url" unexpected inspect_remote; return 1 ;;
-  esac
-}
-
-acquire_repository_lock() {
-  repo_key=$1
-  state_root=$(state_directory)
-  mkdir -p "$state_root"
-  chmod 700 "$state_root"
-  lock="$state_root/$repo_key.lock"
-  if ! mkdir "$lock" 2>/dev/null; then
-    emit_failure LOCK_EXISTS "$lock" present inspect_lock
-    return 1
+verify_migrated_repository() {
+  workspace_root=$1
+  repo_key=$2
+  load_repository_manifest "$repo_key" || return 1
+  journal=$(journal_path "$repo_key")
+  test -f "$journal" || { emit_failure VERIFICATION_FAILED "$repo_key" journal_missing restore_journal; return 1; }
+  expected_id=$(journal_value "$journal" repo_id)
+  expected_sha=$(journal_value "$journal" expected_sha)
+  old_fetch=$(journal_value "$journal" old_fetch)
+  old_push=$(journal_value "$journal" old_push)
+  old_path="$workspace_root/$OLD_PATH_REL"
+  new_path="$workspace_root/$NEW_PATH_REL"
+  test ! -e "$old_path" || { emit_failure VERIFICATION_FAILED "$repo_key" old_path_present inspect_paths; return 1; }
+  test -d "$new_path/.git" || { emit_failure VERIFICATION_FAILED "$repo_key" new_path_missing reverse_or_restore; return 1; }
+  test "$(git -C "$new_path" symbolic-ref --quiet --short HEAD 2>/dev/null || true)" = main || { emit_failure VERIFICATION_FAILED "$repo_key" branch_not_main switch_main; return 1; }
+  test -z "$(git -C "$new_path" status --porcelain)" || { emit_failure VERIFICATION_FAILED "$repo_key" dirty clean_worktree; return 1; }
+  local_sha=$(git -C "$new_path" rev-parse HEAD)
+  test "$local_sha" = "$expected_sha" || { emit_failure VERIFICATION_FAILED "$repo_key" head_mismatch inspect_history; return 1; }
+  identity=$(github_current_identity "$OLD_REPO" "$NEW_REPO") || { emit_failure VERIFICATION_FAILED "$repo_key" github_missing inspect_github; return 1; }
+  repo_id=${identity%%|*}
+  remainder=${identity#*|}
+  current_name=${remainder%%|*}
+  permission=${identity##*|}
+  test "$repo_id" = "$expected_id" && test "$repo_id" = "$EXPECTED_ID" || { emit_failure VERIFICATION_FAILED "$repo_key" id_mismatch stop_and_inspect; return 1; }
+  test "$current_name" = "$NEW_REPO" || { emit_failure VERIFICATION_FAILED "$repo_key" canonical_name_mismatch inspect_github; return 1; }
+  test "$permission" = ADMIN || { emit_failure VERIFICATION_FAILED "$repo_key" admin_missing request_admin; return 1; }
+  expected_fetch=$(rewrite_repository_url "$old_fetch" "$OLD_REPO" "$NEW_REPO") || return 1
+  expected_push=$(rewrite_repository_url "$old_push" "$OLD_REPO" "$NEW_REPO") || return 1
+  test "$(git -C "$new_path" remote get-url origin)" = "$expected_fetch" || { emit_failure VERIFICATION_FAILED "$repo_key" fetch_url_mismatch repair_remote; return 1; }
+  test "$(git -C "$new_path" remote get-url --push origin)" = "$expected_push" || { emit_failure VERIFICATION_FAILED "$repo_key" push_url_mismatch repair_remote; return 1; }
+  if test "${PORTFOLIO_TEST_MODE:-0}" != 1; then
+    cached_sha=$(git -C "$new_path" rev-parse refs/remotes/origin/main)
+    live_sha=$(git -C "$new_path" ls-remote origin refs/heads/main | awk 'NR == 1 { print $1 }')
+    test "$local_sha" = "$cached_sha" && test "$cached_sha" = "$live_sha" || { emit_failure VERIFICATION_FAILED "$repo_key" main_mismatch reconcile_main; return 1; }
+    description=$(github_repo_description "$NEW_REPO") || return 1
+    test "$description" = "$NEW_DESCRIPTION" || { emit_failure VERIFICATION_FAILED "$repo_key" description_mismatch repair_description; return 1; }
+    if test "$RENAME_REMOTE" = yes; then
+      effective=$(curl -sS -L -o /dev/null -w '%{url_effective}' "https://github.com/hanselhansel/$OLD_REPO")
+      test "${effective%/}" = "https://github.com/hanselhansel/$NEW_REPO" || { emit_failure VERIFICATION_FAILED "$repo_key" redirect_mismatch inspect_redirect; return 1; }
+    fi
   fi
-  printf '%s\n' "$$" > "$lock/pid"
-  printf '%s\n' "$lock"
+  test "${PORTFOLIO_APP_GATE:-pending}" = passed || { emit_failure VERIFICATION_FAILED "$repo_key" app_gate_pending run_app_project_readback; return 1; }
 }
 
 migrate_repository() {
   workspace_root=$1
   repo_key=$2
   load_repository_manifest "$repo_key" || return 1
+  if test -n "$PREDECESSOR"; then
+    predecessor_journal=$(journal_path "$PREDECESSOR")
+    predecessor_state=$(journal_value "$predecessor_journal" state 2>/dev/null || true)
+    if test "$predecessor_state" != VERIFIED; then
+      printf '[FAIL] code=DEPENDENCY_NOT_VERIFIED repo=%s dependency=%s observed=%s recovery=migrate_predecessor_first\n' "$repo_key" "$PREDECESSOR" "${predecessor_state:-missing}" >&2
+      return 1
+    fi
+    verify_migrated_repository "$workspace_root" "$PREDECESSOR" || { printf '[FAIL] code=DEPENDENCY_NOT_VERIFIED repo=%s dependency=%s observed=live_verification_failed recovery=repair_predecessor\n' "$repo_key" "$PREDECESSOR" >&2; return 1; }
+    load_repository_manifest "$repo_key" || return 1
+  fi
   lock=$(acquire_repository_lock "$repo_key") || return 1
   trap 'rm -rf "$lock"' EXIT HUP INT TERM
   old_path="$workspace_root/$OLD_PATH_REL"
   new_path="$workspace_root/$NEW_PATH_REL"
   current_state=$(detect_repository_state "$workspace_root" "$repo_key") || return 1
+  if test "$current_state" = BASELINE && test "${PORTFOLIO_TEST_MODE:-0}" != 1; then
+    preflight_repository "$workspace_root" "$repo_key" || return 1
+  fi
   if test "$current_state" = VERIFIED; then
+    verify_migrated_repository "$workspace_root" "$repo_key" || return 1
     printf 'MIGRATED repo=%s state=VERIFIED idempotent=yes\n' "$repo_key"
     rm -rf "$lock"
     trap - EXIT HUP INT TERM
@@ -263,6 +327,7 @@ migrate_repository() {
   fi
   identity=$(github_current_identity "$OLD_REPO" "$NEW_REPO") || { emit_failure REPOSITORY_NOT_FOUND "$OLD_REPO" absent inspect_github; return 1; }
   repo_id=${identity%%|*}
+  test "$repo_id" = "$EXPECTED_ID" || { emit_failure REPOSITORY_ID_MISMATCH "$repo_key" "$repo_id" stop_and_inspect; return 1; }
   remainder=${identity#*|}
   current_name=${remainder%%|*}
   permission=${identity##*|}
@@ -316,6 +381,7 @@ migrate_repository() {
     emit_failure APP_GATE_PENDING "$repo_key" pending run_app_project_readback
     return 1
   fi
+  verify_migrated_repository "$workspace_root" "$repo_key" || return 1
   write_journal "$repo_key" VERIFIED "$repo_id" "$expected_sha" "$old_fetch" "$old_push"
   rm -rf "$lock"
   trap - EXIT HUP INT TERM
