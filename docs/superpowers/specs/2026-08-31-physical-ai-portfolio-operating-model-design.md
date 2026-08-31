@@ -20,7 +20,7 @@ The Open Robotics Middleware Framework office demo is one learning exercise insi
 - Keep project-specific work in the repository that owns it.
 - Preserve independent Git histories and upstream contribution workflows.
 - Make the next action clear when work resumes in a later session.
-- Use the Open-RMF experiment as the first full evidence cycle after the reorganization.
+- Use a flagship experiment charter to select the first full evidence cycle. Open-RMF is the current candidate.
 
 ## Non-goals
 
@@ -48,14 +48,14 @@ A monorepo would simplify local navigation but would disrupt existing histories,
 
 ## Approved taxonomy
 
-Work is classified by its relationship to the Physical AI portfolio.
+Repositories are classified by their primary relationship to the Physical AI portfolio. This is a repository-purpose taxonomy, not an artifact taxonomy.
 
 | Category | Definition | Examples |
 |---|---|---|
 | Portfolio | Governs and explains the complete body of work | Repository map, roadmap, cross-project status, decisions, synthesis |
 | Projects | Work owned and developed as portfolio projects | Warehouse deployment, future manipulation or inspection projects |
 | Contributions | Work submitted to projects owned by others | Open-RMF, ROS 2, Nav2, Isaac, or Foxglove contributions |
-| Outreach | Material used to publish, connect, or collect external feedback | Posts, target lists, outreach, events, conversation notes |
+| Outreach | Public material used to publish, connect, or collect public feedback | Posts, generic target categories, talks, and public derivatives |
 | Forks | Mechanical working copies of repositories owned by others | `warehouse-amr-ros2` fork |
 
 Classification rules:
@@ -67,6 +67,8 @@ Classification rules:
 - A Git working copy of external code stays in Forks and is not represented as an owned portfolio project.
 
 Project-specific learning stays with its project. Contribution-specific learning stays with the contribution. Cross-project synthesis belongs in Portfolio. Public derivatives belong in Outreach.
+
+Private names, contact history, messages, meeting notes, and non-public feedback never belong in the public Outreach repository.
 
 ## Approved names and local structure
 
@@ -163,19 +165,7 @@ A created file, green command, merged internal pull request, open dashboard, or 
 
 ## Portfolio item record
 
-Each tracked item contains:
-
-- Title.
-- Category.
-- Objective.
-- Workflow status.
-- Success criteria.
-- Required validation.
-- Evidence links.
-- Result.
-- Limitations.
-- Next decision.
-- Last verified date.
+Required labels are: Title, Category, Objective, Workflow status, Success criteria, Required validation, Evidence links, Result, Limitations, Next decision, Authority, Observed at, Source commit, Fresh until, and Recheck command. Optional labels are Active project and Candidate experiment. Each item has exactly one workflow status.
 
 The first version remains Markdown. A generated registry or database is unnecessary for the current portfolio size.
 
@@ -322,12 +312,13 @@ For each repository independently:
 
 ### Phase 4: Introduce the Projects layer
 
+- Rewrite and land the warehouse README and path-bearing documentation at the current path.
 - Create the local `projects/` directory.
 - Move the clean warehouse checkout to `projects/warehouse-deployment/`.
 - Keep the GitHub repository name `pai-warehouse-deployment`.
-- Rewrite its README using the execution-repository contract.
 - Correct outdated filenames, simulation descriptions, and GitHub metadata.
 - Update portfolio links after the new path is verified.
+- Update the unversioned local `physical-ai/README.md` and record its before-and-after hashes in the migration receipt.
 
 The `forks/` directory remains unchanged.
 
@@ -359,7 +350,7 @@ At the start and end of cross-repository work:
 - Confirm clean worktrees before moving or renaming directories.
 - Verify portfolio links resolve to committed evidence.
 - Update last-verified dates only after live checks.
-- Keep one active priority unless the roadmap explicitly allows parallel work.
+- Keep at most one active build and one active validation; externally waiting items do not consume either lane.
 - Do not mark a milestone complete from scaffolding or unobserved runtime behavior.
 
 When the portfolio and an execution repository disagree, the execution repository is authoritative for its artifacts and evidence. The portfolio is then corrected to link to that state.
@@ -368,7 +359,7 @@ When the portfolio and an execution repository disagree, the execution repositor
 
 This design governs Project A, the portfolio reorganization.
 
-Project B, Open-RMF validation, begins only after Project A passes its migration checks. It receives a separate design and plan covering supported images, ARM64 compatibility, the current RMF web architecture, runbook corrections, runtime evidence, warehouse interpretation, and the next decision.
+Project B begins with a flagship experiment charter after Project A passes its migration checks. If Open-RMF is selected, it receives a separate design and plan covering supported images, ARM64 compatibility, the current RMF web architecture, runbook corrections, runtime evidence, warehouse interpretation, and the next decision.
 
 Outreach activation is a later project. It begins only after the portfolio contains validated work suitable for external communication.
 
@@ -382,4 +373,4 @@ Project A succeeds when:
 - Current work is classified using the approved status model.
 - Evidence requirements are documented and reusable.
 - All repository histories, external links, and saved project access survive migration.
-- Open-RMF is represented honestly as the next unvalidated runtime milestone.
+- Open-RMF is represented honestly as an unvalidated candidate behind the flagship experiment charter.

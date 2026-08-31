@@ -1,3 +1,4 @@
+<!-- /autoplan restore point: /Users/hansel/.gstack/projects/hanselhansel-physical-ai-foundation/docs-physical-ai-portfolio-design-autoplan-restore-20260831-020441.md -->
 # Physical AI Portfolio Reorganization Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
@@ -7,6 +8,8 @@
 **Architecture:** `physical-ai-portfolio` becomes the cross-repository control plane. Independent execution repositories remain authoritative for their artifacts and evidence. Content changes land before GitHub repository renames and local directory moves, then a final portfolio reconciliation records the verified result.
 
 **Tech Stack:** Git, GitHub CLI, Markdown, shell verification, Codex local projects
+
+**Review state:** APPROVED_AUTOPLAN. User approved option A on 2026-08-31.
 
 ---
 
@@ -18,14 +21,20 @@ Run the gstack autoplan workflow against this plan and the approved design befor
 
 ### Portfolio repository
 
-- Modify: `README.md`, public landing page and MECE repository map.
+- Modify: `README.md`, audience-first landing page and repository-purpose map.
 - Create: `STATUS.md`, current portfolio items and evidence state.
 - Create: `ROADMAP.md`, ordered milestones and activation gates.
 - Create: `docs/decisions/2026-08-31-portfolio-reorganization.md`, before-and-after migration record.
 - Create: `docs/templates/portfolio-item.md`, reusable status record.
 - Create: `docs/templates/runtime-experiment.md`, reusable runtime evidence record.
+- Create: `scripts/portfolio-migration.sh`, Bash 3.2-compatible CLI copied to a neutral directory before moves.
+- Create: `scripts/lib/portfolio-manifest.sh`, explicit repositories, paths, IDs, URLs, descriptions, and dependencies.
+- Create: `scripts/lib/portfolio-state.sh`, state detection, lock, journal, redaction, and filesystem safety.
+- Create: `scripts/lib/github-adapter.sh`, scoped GitHub queries, rename, identity, permission, and redirect checks.
+- Create: `scripts/tests/test-portfolio-migration.sh`, temporary-fixture regression tests.
 - Delete: `docs/progress.md`, after its useful content moves to `STATUS.md` and `ROADMAP.md`.
-- Preserve: `docs/decisions/compute-setup.md` and `docs/x-posts/warehouse-amr-deployment-series.md`.
+- Modify: `docs/decisions/compute-setup.md`, correct paths and unverified runtime wording.
+- Modify: `docs/x-posts/warehouse-amr-deployment-series.md`, mark Parked and remove the publication schedule.
 
 ### Contributions repository
 
@@ -34,55 +43,47 @@ Run the gstack autoplan workflow against this plan and the approved design befor
 
 ### Outreach repository
 
-- Modify: `README.md`, outreach-track contract, parked state, and restart condition.
-- Preserve: `networking/target-list.md` and `networking/message-templates.md`.
+- Modify: `README.md`, public outreach contract, parked state, privacy boundary, and restart condition.
+- Modify: `networking/target-list.md`, keep private contact tracking outside Git.
+- Preserve: `networking/message-templates.md`.
+- Create: `.gitignore`, block likely private contact exports.
 
 ### Warehouse project repository
 
 - Modify: `README.md`, project contract, accurate artifact map, validation state, reproduction entry points, and portfolio link.
-- Preserve: all existing research, runbooks, Docker files, and simulation files.
+- Modify paths only: `RUNBOOK_OPENRMF.md`, `docker/README.md`, and `docker/open-rmf/README.md`.
+- Preserve: all remaining research, Docker, and simulation content.
+
+### Local workspace index
+
+- Modify outside Git: `/Users/hansel/conductor/repos/physical-ai/README.md`; record before-and-after hashes in the sanitized receipt.
+
+## Executor contract
+
+Run inside Codex Desktop with authenticated `git`, `gh`, `rg`, and gstack `/ship` plus `/land-and-deploy`. The migration host is this Darwin ARM64 Mac and the workspace root is `/Users/hansel/conductor/repos/physical-ai`. Every task names its repository or script. Missing tools, failed auth, a dirty worktree, an occupied destination, or a mismatched live ref is a hard stop with no mutation.
 
 ## Task 1: Capture and verify the migration baseline
 
 **Files:**
 - Create: `docs/decisions/2026-08-31-portfolio-reorganization.md`
 
-- [ ] **Step 1: Recheck live Git state for all repositories**
+- [ ] **Step 1: Write failing migration-script tests**
 
-Run from `/Users/hansel`:
+Use isolated `HOME`, `GH_CONFIG_DIR`, a temporary workspace, local bare repos, and fake `gh`/`git` adapters first in `PATH`. Cover zero-mutation dry-run, successful apply, failure and resume after each transition, wrong repository ID, auth errors, dirty and diverged refs, linked worktrees, concurrent and stale locks, SSH/HTTPS remotes, symlink or occupied destinations, 399/400-line boundaries, description failure, and the warehouse no-rename lane. Expected first run: FAIL because the runner does not exist.
 
-```bash
-for repo in foundation warehouse-deployment lerobot-contrib community forks/warehouse-amr-ros2; do
-  path="/Users/hansel/conductor/repos/physical-ai/$repo"
-  git -C "$path" status --short --branch
-  git -C "$path" rev-parse HEAD
-  git -C "$path" rev-parse refs/remotes/origin/main 2>/dev/null || true
-  git -C "$path" ls-remote origin refs/heads/main
-  git -C "$path" remote -v
-done
-```
+- [ ] **Step 2: Implement the fail-closed runner**
 
-Expected: clean worktrees; local, cached, and live `main` match for owned repositories; the fork contribution branch remains distinct from `main`.
+Use Bash 3.2-compatible syntax and `set -euo pipefail`; do not use `eval`, `flock`, GNU-only path tools, or associative arrays. Provide `preflight`, `status`, `migrate-one`, and `verify`. Copy the runner and libraries to a neutral temporary directory before mutation. Store a mode-0600 journal and atomic directory lock under `/Users/hansel/.local/state/physical-ai-portfolio-migration`. Model `BASELINE → REMOTE_RENAMED → ORIGIN_UPDATED → LOCAL_MOVED → METADATA_UPDATED → VERIFIED` using immutable GitHub ID, admin permission, expected main SHA, fetch/push URLs, paths, description, and timestamps. Query only allowlisted fields, redact private values, and require `--apply`.
 
-- [ ] **Step 2: Recheck rename exceptions and external dependencies**
+- [ ] **Step 3: Run baseline verification**
 
-Run:
+Commit the green runner and tests as `chore: add fail-closed portfolio migration runner`. Then run `bash scripts/portfolio-migration.sh preflight` against canonical main checkouts while reporting linked worktrees separately. Expected: labelled PASS rows for tools, auth, host, paths, immutable IDs, admin permission, local/cached/live main equality, target-name availability, rename exceptions, upstream PR, and a sanitized old-name inventory.
 
-```bash
-for repo in foundation warehouse-deployment lerobot-contrib community; do
-  path="/Users/hansel/conductor/repos/physical-ai/$repo"
-  find "$path" -path '*/.git' -prune -o \( -path '*/.github/workflows/*' -o -name CNAME -o -name action.yml -o -name action.yaml \) -print
-done
-gh pr view https://github.com/Pouya-Mansournia/warehouse-amr-ros2/pull/1 --json state,url,headRefName,baseRefName,mergeStateStatus
-```
-
-Expected: no Pages or repository-hosted Action files; upstream PR `#1` is open and resolvable.
-
-- [ ] **Step 3: Write the baseline decision record**
+- [ ] **Step 4: Write the baseline decision record**
 
 Record the approved taxonomy, official GitHub rename caveats, every old path and remote, every baseline HEAD, the upstream PR URL, the absence of Pages and hosted Actions, and the rule that old repository names must not be reused.
 
-- [ ] **Step 4: Verify and commit the baseline**
+- [ ] **Step 5: Verify and commit the baseline**
 
 Run:
 
@@ -106,44 +107,36 @@ Expected: one focused commit on `docs/physical-ai-portfolio-design`.
 
 - [ ] **Step 1: Rewrite the public landing page**
 
-Include the portfolio purpose, warehouse/logistics starting domain, PM/deployment/solutions focus, MECE taxonomy, repository table, authority boundaries, current priority, and links to `STATUS.md` and `ROADMAP.md`. Use the approved future GitHub names.
+Lead with the current flagship work, evidence state, and next decision. Then include the portfolio purpose, warehouse/logistics starting domain, PM/deployment/solutions focus, repository-purpose taxonomy, authority boundaries, and links to `STATUS.md` and `ROADMAP.md`. Use current resolvable URLs until Task 8; new URLs land during reconciliation.
 
 - [ ] **Step 2: Create the status record**
 
-Create entries for portfolio reorganization, Open-RMF validation, warehouse evidence audit, upstream warehouse AMR contribution, X posts, networking materials, and compute decision. Use only the approved statuses. Each entry must include objective, success criteria, required validation, evidence, result, limitations, next decision, and last verified date.
+Create entries for portfolio reorganization, warehouse evidence audit, upstream contribution, parked X posts, networking materials, and compute decision. Each summary contains active project, status, evidence link, result, next decision, candidate experiment, authority, observed time, source commit, freshness limit, and recheck command. Detailed validation stays in the owning repository.
 
 - [ ] **Step 3: Create the roadmap**
 
-Define this order: portfolio reorganization, Open-RMF design, Open-RMF runtime validation, warehouse artifact integration, retrospective, then outreach activation. State the gate between each milestone.
+Define this order: portfolio reorganization, flagship experiment charter, Open-RMF or alternative design, runtime validation, warehouse artifact integration, retrospective, then outreach activation. State the gate between each milestone. Limit work to one active build, one active validation, and external waiting items.
 
 - [ ] **Step 4: Create the shared templates**
 
-The portfolio-item template contains every required status field. The runtime-experiment template contains environment, exact versions and digests, commands, expected and observed behavior, logs, screenshots, failures, interpretation, downstream changes, and next decision.
+The portfolio-item template uses the canonical labels in the approved design. The runtime-experiment template contains environment, exact versions and digests, commands, expected and observed behavior, logs, screenshots, failures, interpretation, downstream changes, and next decision.
 
-- [ ] **Step 5: Remove the superseded progress file**
+- [ ] **Step 5: Repair preserved portfolio documents**
+
+Correct the compute path and replace unobserved performance wording. Mark the X series `Parked, not publication-ready`, remove its schedule, and state that quantitative claims require source validation before publishing.
+
+- [ ] **Step 6: Remove the superseded progress file**
 
 Delete `docs/progress.md` only after every still-current fact has a destination in `STATUS.md` or `ROADMAP.md`.
 
-- [ ] **Step 6: Run focused control-plane checks**
+- [ ] **Step 7: Run focused control-plane checks**
 
-Run:
+Run `bash scripts/tests/test-portfolio-migration.sh` and `bash scripts/portfolio-migration.sh verify`. Expected: all fixtures pass, required files and every required heading are checked individually, no aggregate `wc` row is evaluated, no whitespace error exists, and every Markdown or script file remains below 400 lines.
 
-```bash
-test -f README.md && test -f STATUS.md && test -f ROADMAP.md
-test -f docs/templates/portfolio-item.md && test -f docs/templates/runtime-experiment.md
-test ! -e docs/progress.md
-rg -n '^## (Portfolio|Projects|Contributions|Outreach|Forks)' README.md
-rg -n 'Backlog|Ready|Active|Waiting|Complete|Parked|Dropped' STATUS.md
-git diff --check
-find . -path './.git' -prune -o -type f -print0 | xargs -0 wc -l | awk '$1 >= 400 {print; bad=1} END {exit bad}'
-```
-
-Expected: all required files exist, the old progress file is absent, required categories and statuses are present, no whitespace errors, and every file remains below 400 lines.
-
-- [ ] **Step 7: Commit the control plane**
+- [ ] **Step 8: Commit the control plane**
 
 ```bash
-git add README.md STATUS.md ROADMAP.md docs/templates docs/progress.md
+git add README.md STATUS.md ROADMAP.md docs/templates docs/decisions/compute-setup.md docs/x-posts/warehouse-amr-deployment-series.md docs/progress.md
 git commit -m "docs: establish Physical AI portfolio control plane"
 ```
 
@@ -169,7 +162,8 @@ Keep the existing upstream PR facts. Add separate fields for execution status `S
 
 ```bash
 git diff --check
-! rg -n 'Track contributions in `\.\./foundation' README.md
+test -r README.md
+if rg -n 'Track contributions in `\.\./foundation' README.md; then exit 1; else test "$?" -eq 1; fi
 git add README.md docs/contributions.md
 git commit -m "docs: align repository with contributions track"
 ```
@@ -185,7 +179,9 @@ Create branch `chore/portfolio-taxonomy` from verified `main` in a global worktr
 
 - [ ] **Step 2: Rewrite the README**
 
-Name the track “Physical AI Outreach.” Define publishing, networking, events, and external feedback as its boundary. Mark the track Parked. Set the restart condition to completion of a validated portfolio case approved for external communication. Link the existing target list and message templates without sending anything.
+Name the track “Physical AI Outreach.” Define publishable posts, generic networking targets, events, and public feedback as its boundary. Explicitly exclude personal names, contact history, direct messages, meeting notes, and non-public feedback. Mark the track Parked and link the existing generic target list and templates without sending anything.
+
+Update the target-list tracking section to direct private relationship records outside the public repo without naming or inspecting a private store. Add ignore rules for contact exports and test that no tracked file matches the private-record patterns.
 
 - [ ] **Step 3: Verify and commit**
 
@@ -207,16 +203,16 @@ Create branch `chore/portfolio-contract` from verified `main` in a global worktr
 
 - [ ] **Step 2: Rewrite the README**
 
-Describe the project’s portfolio purpose, warehouse/3PL scope, learning goals, non-goals, exact artifact map, Docker and simulation entry points, current validation state, next Open-RMF milestone, and link to `physical-ai-portfolio`. Do not claim the Open-RMF runtime has succeeded.
+Describe the project’s portfolio purpose, warehouse/3PL scope, learning goals, non-goals, exact artifact map, Docker and simulation entry points, current validation state, candidate Open-RMF experiment, and current portfolio URL. Repair old absolute paths in the three path-bearing runbooks without changing runtime behavior.
 
 - [ ] **Step 3: Verify file references and commit**
 
 Run:
 
 ```bash
-for file in docs/vendor-matrix.md docs/case-study-walmart-symbotic.md docs/prd-warehouse-amr-deployment.md docs/integration-architecture.md docs/deployment-checklist.md docs/playbook.md docs/amr-fleet-orchestration.md RUNBOOK_OPENRMF.md sim/open-rmf-office-demo/README.md sim/open-rmf-office-demo/office-demo-notes.md; do test -f "$file"; done
+missing=0; for file in docs/vendor-matrix.md docs/case-study-walmart-symbotic.md docs/prd-warehouse-amr-deployment.md docs/integration-architecture.md docs/deployment-checklist.md docs/playbook.md docs/amr-fleet-orchestration.md RUNBOOK_OPENRMF.md sim/open-rmf-office-demo/README.md sim/open-rmf-office-demo/office-demo-notes.md; do test -f "$file" || { echo "missing:$file"; missing=1; }; done; test "$missing" -eq 0
 git diff --check
-git add README.md
+git add README.md RUNBOOK_OPENRMF.md docker/README.md docker/open-rmf/README.md
 git commit -m "docs: define warehouse project portfolio contract"
 ```
 
@@ -248,66 +244,34 @@ For every repository, compare local `main`, cached `origin/main`, and live `refs
 
 - [ ] **Step 1: Remove completed global worktrees**
 
-Use `git worktree remove` from each main checkout, then `git worktree prune`. Confirm no branch is checked out outside its main checkout before moving directories.
+Use the recorded allowlist of worktrees created by this plan. Remove only an allowlisted clean worktree whose branch is merged. Abort on any unexpected linked worktree, then prune metadata.
 
-- [ ] **Step 2: Rename GitHub repositories**
+- [ ] **Step 2: Migrate Portfolio end to end**
 
-Run:
+From the stable parent directory, run the neutral copied runner with `migrate-one portfolio --apply`, then invoke status by the new absolute path. Verify immutable ID, redirect, remote, clean HEAD, destination, metadata, journal, and reverse local move before `VERIFIED`.
 
-```bash
-gh repo rename physical-ai-portfolio --repo hanselhansel/physical-ai-foundation --yes
-gh repo rename pai-contributions --repo hanselhansel/pai-lerobot-contrib --yes
-gh repo rename pai-outreach --repo hanselhansel/pai-community --yes
-```
+- [ ] **Step 3: Migrate Contributions end to end**
 
-Expected: the three new repository URLs resolve and the old URLs redirect. Do not recreate the old names.
+Run the neutral runner for Contributions. Do not start unless Portfolio is `VERIFIED`.
 
-- [ ] **Step 3: Update local remote URLs**
+- [ ] **Step 4: Migrate Outreach end to end**
 
-Run before moving the checkouts:
+Run the neutral runner for Outreach. Do not start unless Contributions is `VERIFIED`.
 
-```bash
-git -C /Users/hansel/conductor/repos/physical-ai/foundation remote set-url origin https://github.com/hanselhansel/physical-ai-portfolio.git
-git -C /Users/hansel/conductor/repos/physical-ai/lerobot-contrib remote set-url origin https://github.com/hanselhansel/pai-contributions.git
-git -C /Users/hansel/conductor/repos/physical-ai/community remote set-url origin https://github.com/hanselhansel/pai-outreach.git
-```
+- [ ] **Step 5: Move the Warehouse project**
 
-Verify each with `git remote -v`.
-
-- [ ] **Step 4: Move clean local checkouts**
-
-Verify that none of the four destinations exists, then run:
-
-```bash
-mkdir -p /Users/hansel/conductor/repos/physical-ai/projects
-mv /Users/hansel/conductor/repos/physical-ai/foundation /Users/hansel/conductor/repos/physical-ai/portfolio
-mv /Users/hansel/conductor/repos/physical-ai/lerobot-contrib /Users/hansel/conductor/repos/physical-ai/contributions
-mv /Users/hansel/conductor/repos/physical-ai/community /Users/hansel/conductor/repos/physical-ai/outreach
-mv /Users/hansel/conductor/repos/physical-ai/warehouse-deployment /Users/hansel/conductor/repos/physical-ai/projects/warehouse-deployment
-```
-
-Use explicit absolute paths. Do not use recursive deletion, globs, or unresolved variables.
-
-- [ ] **Step 5: Update GitHub descriptions**
-
-Run:
-
-```bash
-gh repo edit hanselhansel/physical-ai-portfolio --description "Control plane and public index for Hansel's Physical AI projects, contributions, evidence, and roadmap."
-gh repo edit hanselhansel/pai-contributions --description "Open-source contributions across Open-RMF, ROS 2, Nav2, Isaac, Foxglove, and Physical AI deployment tooling."
-gh repo edit hanselhansel/pai-outreach --description "Physical AI publishing, outreach, networking, and external feedback."
-gh repo edit hanselhansel/pai-warehouse-deployment --description "Warehouse Physical AI portfolio project: AMR deployment research, WMS integration, playbooks, and reproducible Open-RMF experiments."
-```
+Run the neutral runner for Warehouse. This lane changes the local path and description without renaming GitHub. Do not start unless Outreach is `VERIFIED`.
 
 - [ ] **Step 6: Verify redirects, histories, and project access**
 
-Confirm old and new GitHub URLs, local HEAD preservation, clean worktrees, updated remotes, upstream PR access, and Codex project discovery. No saved Codex project currently points directly at the moving repositories, so no project registration rewrite is expected.
+Confirm old and new URLs, immutable IDs, local HEAD preservation, clean worktrees, remotes, descriptions, upstream PR, privacy separation, and zero unexplained old-name matches. Use the Codex app project-list query as a separate app-level gate and record IDs and path readback; the shell runner must not claim that result.
 
 ## Task 9: Reconcile final portfolio status
 
 **Files:**
 - Modify: `STATUS.md`
 - Modify: `docs/decisions/2026-08-31-portfolio-reorganization.md`
+- Modify in leaf reconciliation branches: Contributions, Outreach, and Warehouse READMEs.
 
 - [ ] **Step 1: Create a final reconciliation branch**
 
@@ -315,11 +279,11 @@ From verified live `physical-ai-portfolio/main`, create `docs/portfolio-migratio
 
 - [ ] **Step 2: Record the verified result**
 
-Mark portfolio reorganization Complete only after all acceptance checks pass. Add new paths, new remotes, final live main commits, redirect results, preserved upstream PR, limitations, and the next decision to design the Open-RMF validation cycle.
+Mark portfolio reorganization Complete only after all acceptance checks pass. Add new paths, new URLs, final live main commits, redirect results, preserved upstream PR, limitations, and the next decision to write a flagship experiment charter before choosing Open-RMF or an alternative.
 
 - [ ] **Step 3: Verify, commit, ship, and land**
 
-Run focused Markdown, line-limit, remote, and link checks. Commit the reconciliation. Run `/ship` exactly, followed by `/land-and-deploy` exactly.
+Canonicalize links in all affected repositories, update the local workspace README with a recorded hash, and run focused checks. Ship and land each reconciliation branch through `/ship` then `/land-and-deploy` exactly.
 
 ## Task 10: Final reconciliation and cleanup
 
@@ -339,8 +303,55 @@ For each owned repository, local `main`, cached `origin/main`, and live GitHub `
 
 - [ ] **Step 2: Verify portfolio acceptance criteria**
 
-Confirm the MECE names, control-plane files, repository contracts, status model, evidence templates, redirect behavior, upstream PR, and saved-project access. Confirm Open-RMF remains the next unvalidated runtime milestone.
+Confirm the names, repository-purpose boundaries, control-plane files, status model, evidence templates, redirect behavior, upstream PR, and saved-project access. A reader must identify the current flagship work, evidence state, and next decision from the README in under 60 seconds. Confirm Open-RMF remains an unvalidated candidate, not a proven flagship case.
 
 - [ ] **Step 3: Remove temporary worktrees and report completion**
 
 Remove only the worktrees created by this plan after their branches have landed. Prune worktree metadata. Do not delete branches or repositories unless a later explicit cleanup decision requires it.
+
+## Autoplan decision audit
+
+Full CEO review: `/Users/hansel/.gstack/projects/hanselhansel-physical-ai-foundation/ceo-plans/2026-08-31-physical-ai-portfolio-reorganization.md`.
+
+| # | Phase | Decision | Class | Principle | Result |
+|---|---|---|---|---|---|
+| 1 | CEO | Lead with evidence before governance | Mechanical | Explicit | Added |
+| 2 | CEO | Exclude private relationship records from public Outreach | Mechanical | Complete | Added |
+| 3 | CEO | Keep detailed status in leaf repositories | Mechanical | DRY | Added |
+| 4 | CEO | Publish only links that resolve now | Mechanical | Explicit | Added |
+| 5 | CEO | Migrate one repository at a time | Mechanical | Pragmatic | Added |
+| 6 | CEO | Full migration versus thin pilot | User Challenge | User sovereignty | Full migration approved |
+| 7 | CEO | Private discovery before flagship selection | User Challenge | User sovereignty | Outside Project A |
+| 8 | CEO | Repository-purpose taxonomy versus deliverable taxonomy | User Challenge | User sovereignty | Repository-purpose retained |
+| 9 | CEO | Open-RMF as next candidate versus select flagship first | User Challenge | User sovereignty | Candidate behind charter |
+| 10 | DX | Add fail-closed migration runner and tests | Mechanical | Complete | Added |
+| 11 | DX | Separate active project, next decision, and candidate experiment | Mechanical | Explicit | Added |
+| 12 | DX | Replace batch moves with resumable repository lanes | Mechanical | Pragmatic | Added |
+| 13 | DX | Update stale compute and X-post paths and states | Mechanical | Complete | Added |
+| 14 | DX | Add freshness authority and recheck fields | Mechanical | Explicit | Added |
+| 15 | Eng | Use neutral runner and private journal outside moving repos | Mechanical | Explicit | Added |
+| 16 | Eng | Bind transitions to immutable GitHub identity | Mechanical | Complete | Added |
+| 17 | Eng | Split Bash 3.2 modules below 400 lines | Mechanical | Pragmatic | Added |
+| 18 | Eng | Test adapters in isolated fake GitHub and Git fixtures | Mechanical | Complete | Added |
+| 19 | Eng | Repair every path-bearing warehouse file | Mechanical | Complete | Added |
+| 20 | Eng | Reconcile canonical links in every leaf repo | Mechanical | Complete | Added |
+| 21 | Eng | Verify saved projects through the app-level query | Mechanical | Explicit | Added |
+| 22 | Eng | Keep full migration blocked until user challenges resolve | Mechanical | Safety | Added |
+
+Full Engineering test plan: `/Users/hansel/.gstack/projects/hanselhansel-physical-ai-foundation/hansel-docs-physical-ai-portfolio-design-eng-review-test-plan-20260831-103500.md`.
+
+## GSTACK REVIEW REPORT
+
+| Review | Trigger | Why | Runs | Status | Findings |
+|---|---|---|---:|---|---|
+| CEO Review | `/plan-ceo-review` | Scope and strategy | 1 | CLEAR | 9 decisions resolved, full migration retained |
+| Codex Review | `/codex review` | Independent voice | 0 | ABSORBED | Codex voices ran inside CEO, DX, and Eng phases |
+| Eng Review | `/plan-eng-review` | Architecture and tests | 1 | CLEAR | 8 issues folded, 0 critical gaps, approved to execute |
+| Design Review | `/plan-design-review` | UI and UX | 0 | SKIPPED | No UI scope |
+| DX Review | `/plan-devex-review` | Developer experience | 1 | CLEAR | 3.5/10 to planned 8.6/10, TTHW over 5m to under 2m |
+
+**CROSS-MODEL:** Codex and independent subagents agreed on scope risk, migration state safety, privacy, and drift controls.
+
+**VERDICT:** CEO + DX + ENG CLEARED. Ready to implement the approved full migration.
+
+NO UNRESOLVED DECISIONS
