@@ -13,7 +13,7 @@ The execution repository owns detailed evidence. This file holds concise cross-p
 - **Success criteria:** Approved names, paths, repository contracts, links, and verification gates are live and reconciled.
 - **Required validation:** Review-validated, runtime-validated migration checks, and decision-validated completion.
 - **Evidence links:** [Design](docs/superpowers/specs/2026-08-31-physical-ai-portfolio-operating-model-design.md), [plan](docs/superpowers/plans/2026-08-31-physical-ai-portfolio-reorganization.md), [baseline](docs/decisions/2026-08-31-portfolio-reorganization.md).
-- **Result:** Portfolio, Contributions, Outreach, and Warehouse are renamed or moved as approved. All four migration journals report `VERIFIED`, and canonical leaf links and local paths are live.
+- **Result:** Portfolio, Contributions, Outreach, and Warehouse are renamed or moved as approved. All four migration journals report `VERIFIED`. Canonical leaf links and local paths passed final reconciliation.
 - **Limitations:** Previous GitHub names remain redirects and must not be reused. Private migration journals remain local operator evidence.
 - **Next decision:** Select and write the flagship experiment charter.
 - **Authority:** Portfolio repository and live GitHub refs.
@@ -38,7 +38,7 @@ The execution repository owns detailed evidence. This file holds concise cross-p
 - **Next decision:** Begin after the portfolio migration and flagship experiment charter.
 - **Authority:** Warehouse project repository.
 - **Observed at:** 2026-08-31
-- **Source commit:** `856a63e424f4bca2156d2cbe507e0595fe4647b2`
+- **Source commit:** `c55eb5611f3d65782cf6fe735ef967ea7686486a`
 - **Fresh until:** 2026-09-30
 - **Recheck command:** `git -C ../projects/warehouse-deployment log -1 --format=%H`
 - **Active project:** No
@@ -94,7 +94,7 @@ The execution repository owns detailed evidence. This file holds concise cross-p
 - **Next decision:** Restart after a validated case is approved for external communication.
 - **Authority:** Outreach repository.
 - **Observed at:** 2026-08-31
-- **Source commit:** `d2fdb09034d8ffda8f1aafeba740ab5ee8bdab37`
+- **Source commit:** `18bd1490d7d6af5dd77a277316cc2d013c2f81cd`
 - **Fresh until:** 2026-09-30
 - **Recheck command:** `git -C ../outreach status --short --branch`
 

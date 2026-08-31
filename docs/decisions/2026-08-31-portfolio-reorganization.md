@@ -1,7 +1,7 @@
 # Physical AI portfolio reorganization
 
 Date: 2026-08-31
-Status: Approved, implementation active
+Status: Complete
 
 ## Decision
 

@@ -4,8 +4,8 @@
 
 ### Changed
 
-- The [portfolio landing page](README.md), [status](STATUS.md), and [migration decision](docs/decisions/2026-08-31-portfolio-reorganization.md) now record all four repository lanes and canonical leaf links as `VERIFIED`.
-- The next portfolio action is now the flagship experiment charter.
+- You can now confirm all four `VERIFIED` migration lanes and canonical leaf links from the [portfolio landing page](README.md), [status](STATUS.md), and [migration decision](docs/decisions/2026-08-31-portfolio-reorganization.md).
+- You can now move to the [flagship experiment charter](ROADMAP.md#2-flagship-experiment-charter) as the next portfolio action.
 
 ### For contributors
 
