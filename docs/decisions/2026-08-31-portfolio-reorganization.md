@@ -98,4 +98,4 @@ Migration inventory output records counts and boolean results. It does not recor
 
 ## Next action
 
-Build the Portfolio control plane and align the three execution repositories. Ship and land content before starting any remote rename or local move.
+The Portfolio lane is `VERIFIED`. Land the per-repository app-gate fix, then migrate Contributions, Outreach, and Warehouse in dependency order.
