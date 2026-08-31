@@ -98,9 +98,9 @@ Migration inventory output records counts and boolean results. It does not recor
 
 ## Next action
 
-The repository reorganization is complete. Select and write the flagship experiment charter next.
+All four migration lanes are `VERIFIED`. Update the remaining leaf READMEs to canonical links, then rerun final reconciliation before starting the flagship experiment charter.
 
-## Final verified state
+## Current verified lane state
 
 | Purpose | Canonical GitHub repository | Canonical local path | Baseline main before reconciliation |
 |---|---|---|---|
@@ -110,3 +110,5 @@ The repository reorganization is complete. Select and write the flagship experim
 | Warehouse project | `hanselhansel/pai-warehouse-deployment` | `projects/warehouse-deployment/` | `856a63e424f4bca2156d2cbe507e0595fe4647b2` |
 
 All four private migration journals reached `VERIFIED`. GitHub readback retained the same immutable repository IDs through the renames. The old names remain redirects and must not be reused. The Codex saved-project readback found no project rooted directly at a moved path. The external warehouse AMR pull request remained accessible and open. The local workspace index was reconciled to the new structure with SHA-256 `80a19a6d96d13d6ff0538f3903717c33e54ff9c38c0f0968682bdc1bdbd122c2`.
+
+Canonical leaf README reconciliation remains open. Contributions and Warehouse still link to `physical-ai-foundation`; Outreach also retains pre-migration `pai-community` wording. Project A remains Active until those links are updated and the final reconciliation gate passes.
